@@ -1,6 +1,6 @@
 *.ipynb
 data/
-/Deep_learning/checkpoints/
-/Deep_learning/logs/
-checkpoints/
-logs/
+/Deep_learning/checkpoints/*
+/Deep_learning/logs/*
+checkpoints/*
+logs/*
