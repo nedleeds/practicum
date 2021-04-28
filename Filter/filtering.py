@@ -1,3 +1,12 @@
+import os
+import glob
+import shutil
+import SimpleITK as sitk
+import matplotlib
+matplotlib.use('tkagg')
+import matplotlib.pyplot as plt
+plt.style.use('dark_background')
+
 from .frangi import frangi, hessian, utils
 
 class filtering():
@@ -18,8 +27,8 @@ class filtering():
         [🔥️]  8) Curvelet
         '''
         
-        self.filter = input("Choice Image Filter:\n(1) KMeans\n(2) Otsu\n(3) Frangi\n(4) Fuzzy\n \
-                                                 \r(5) Region Growing\n(6) Anistropic Diffusion Filter\n \
+        self.filter = input("Choice Image Filter:\n(1) KMeans\n(2) Otsu\n(3) Frangi\n(4) Fuzzy\n\
+                                                 \r(5) Region Growing\n(6) Anistropic Diffusion Filter\n\
                                                  \r(7) Wavelet\n(8) Curvelet : ")
         
         if   self.filter == '1': self.kmeans()
@@ -40,7 +49,17 @@ class filtering():
 
     def frangi(self):
         print("{0:=^38}".format(" Frangi "))
-        frangi()
+        octa_nii_list = sorted(glob.glob(os.path.join(self.niidir,'*')), key=os.path.getctime)
+        octa_sitk     = sitk.ReadImage(octa_nii_list[0])
+        octa_array    = sitk.GetArrayFromImage(octa_sitk)
+        
+        octa_frangi = frangi(octa_array[:,:,:,0], scale_range=(1, 10), scale_step=2, alpha=0.5, beta=0.5, frangi_c=500, black_vessels=True)
+        
+        plt.subplots(1,3,figsize=(10,30))
+        plt.subplot(131), plt.imshow(octa_frangi[:,300,:], cmap='gray'), plt.axis(False)
+        plt.subplot(132), plt.imshow(octa_frangi[:,350,:], cmap='gray'), plt.axis(False)
+        plt.subplot(133), plt.imshow(octa_frangi[:,400,:], cmap='gray'), plt.axis(False)
+        plt.show()
 
     def fuzzy(self):
         print("{0:=^38}".format(" Fuzzy "))
