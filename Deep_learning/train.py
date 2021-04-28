@@ -26,7 +26,7 @@ class train():
         valid = tf.reshape(self.valid,(-1, self.r, self.c, 1))
         test  = tf.reshape(self.test ,(-1, self.r, self.c, 1))
         
-        train_valid = [train, valid]        
+        train_valid = [train, valid]
         
         # model building
         # 1. select model
