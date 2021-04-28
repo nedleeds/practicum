@@ -3,8 +3,10 @@ import random
 import numpy as np
 import tensorflow as tf
 
+from .metrics import metric
 from sklearn.model_selection import train_test_split
 from .model_select           import model_select, compile_train
+
 
 
 # from Models import unet, segnet
@@ -17,8 +19,8 @@ class train():
         }
     def __call__(self, imgs):
         self.d, self.r, self.c = np.shape(imgs)
-        self.train, self.test  = train_test_split(imgs, test_size=0.1, shuffle=True, random_state=42)
-        self.train, self.valid = train_test_split(self.train, test_size=0.3, shuffle=True, random_state=42)
+        self.train, self.test  = train_test_split(imgs, test_size=0.1, shuffle=True)
+        self.train, self.valid = train_test_split(self.train, test_size=0.3, shuffle=True)
         
         print(np.shape(self.train), np.shape(self.valid), np.shape(self.test))
 
@@ -34,13 +36,13 @@ class train():
         selected_model.summary()
 
         # 2. compile model
-        compile_train(selected_model, self.select, train_valid)(opt='Adam', lss='mse', metric=['accuracy'], epoch=50, batch=8)
+        compile_train(selected_model, self.select, train_valid)(opt='Adam', lss='mse', epoch=50, batch=4, learn_r=0.01)
         
         # model prediction
         model_out = []
         for i in range(len(test)):
-            a = self.model_.predict(tf.reshape(self.test[i],(1, self.r, self.c, 1)))
-            model_out.append(a.reshape(self.r,self.c))
+            a = selected_model(tf.reshape(self.test[i],(1, self.r, self.c, 1)))
+            model_out.append(np.reshape(a,(self.r,self.c)))
 
         cv2.imwrite('./result/predict.png', model_out[0])
 

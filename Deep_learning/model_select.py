@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 
 from .Models import unet, segnet
-
+from keras   import optimizers
 
 class model_select(object):
     def __init__(self, select='unet'):
@@ -27,14 +27,17 @@ class compile_train():
         self.train  = data[0]
         self.valid  = data[1]
 
-    def __call__(self, opt='Adam', lss='mse', metric=['accuracy'], epoch=1000, batch=8):
+    def __call__(self, opt='Adam', lss='mse', metric=False, epoch=1000, batch=8, learn_r=0.0001):
         self.optimizer   = opt  
         self.loss        = lss
         self.metric      = metric
-        self.model_.compile(optimizer=self.optimizer,
-                            loss=self.loss, 
-                            metrics=self.metric)
-        
+
+        if self.metric :    
+            self.model_.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metric)
+        else:
+            adam = optimizers.Adam(lr=learn_r)
+            self.model_.compile(loss=self.loss, optimizer=adam)
+
         self.model_.fit(self.train, self.train,
                         batch_size=batch,
                         epochs=epoch, 
@@ -68,10 +71,11 @@ class compile_train():
         print("LOGSDIR = {}".format(LOGSDIR))
         print("CHCKDIR = {}".format(CHCKDIR))
 
-        early_stopping  = K.callbacks.EarlyStopping(patience=5, restore_best_weights=True), 
+        early_stopping  = K.callbacks.EarlyStopping(patience=10, restore_best_weights=True), 
         model_ckpt      = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CHCKDIR,'model.{epoch:02d}-{loss:.2f}.h5'),
                                                              save_best_only=True ),
         board_ckpt      = tf.keras.callbacks.TensorBoard(log_dir = LOGSDIR)
-        model_callbacks = [early_stopping, model_ckpt, board_ckpt]
+        # model_callbacks = [early_stopping, model_ckpt, board_ckpt]
+        model_callbacks = [model_ckpt, board_ckpt]
         
         return model_callbacks
