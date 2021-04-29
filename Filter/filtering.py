@@ -7,6 +7,8 @@ matplotlib.use('tkagg')
 import matplotlib.pyplot as plt
 plt.style.use('dark_background')
 import nibabel as nib
+import numpy as np
+import cv2
 
 from .frangi       import frangi as frangi3d
 from .frangi       import hessian, utils
@@ -53,12 +55,20 @@ class filtering():
     def frangi(self):
         print("{0:=^38}".format(" Frangi "))
         nm_octa = self.datas[0]
-        frangi_octa = frangi2d(nm_octa, sigmas=1, scale_ste p=0.001, black_ridges=False)
+        frangi_octa = frangi2d(nm_octa, sigmas=1, scale_step=0.001, black_ridges=False)
+        clahe_octa = self.CLAHE(frangi_octa*10000)
 
-        plt.subplots(1,2,figsize=(10,20))
-        plt.subplot(121), plt.imshow(nm_octa, cmap='gray'), plt.axis(False)
-        plt.subplot(122), plt.imshow(frangi_octa, cmap='gray'), plt.axis(False)
+        plt.subplots(1,3, figsize=(30,10))
+        plt.subplot(131), plt.imshow(nm_octa,     cmap='gray'), plt.axis(False), plt.title('og_octa')
+        plt.subplot(132), plt.imshow(frangi_octa, cmap='gray'), plt.axis(False), plt.title('frangi_octa')
+        plt.subplot(133), plt.imshow(clahe_octa,  cmap='gray'), plt.axis(False), plt.title('CLAHE_frangi_octa')
         plt.show()
+        plt.subplots(1,3, figsize=(30,10))
+        plt.subplot(131), plt.hist(nm_octa),     plt.title('og_octa')
+        plt.subplot(132), plt.hist(frangi_octa), plt.title('frangi_octa')
+        plt.subplot(133), plt.hist(clahe_octa),  plt.title('CLAHE_frangi_octa')
+        plt.show()
+        
         # octa_nii_list = sorted(glob.glob(os.path.join(self.niidir,'*')), key=os.path.getctime)
         
         # for nii in octa_nii_list:
@@ -66,7 +76,7 @@ class filtering():
 
         # octa_sitk   = sitk.ReadImage(octa_nii_list[0])
         # octa_array  = sitk.GetArrayFromImage(octa_sitk)
-    
+
         # octa_frangi1 = frangi3d(octa_array[:,:,:,0], scale_range=(1, 10), scale_step=2, alpha=0.5, beta=0.5, frangi_c=500)
         # octa_frangi2 = frangi3d(octa_array[:,:,:,0], scale_range=(1, 10), scale_step=2, alpha=0.5, beta=0.5, frangi_c=500)
         # octa_frangi3 = frangi3d(octa_array[:,:,:,0], scale_range=(1, 10), scale_step=2, alpha=0.5, beta=0.5, frangi_c=500)
@@ -92,6 +102,13 @@ class filtering():
 
     def curvelet(self):
         print("{0:=^38}".format(" Curvelet "))
+
+    def CLAHE(self, img):
+        # Contrast Limited Adaptive Histogram Equalization
+        img = (img*255).astype(np.uint8)
+        clahe = cv2.createCLAHE(clipLimit=50, tileGridSize=(4,4))
+        cl1   = clahe.apply(img)
+        return np.asarray(cl1)
 
     def addHeader(self, nii, dnum):
         nib_img= nib.load(os.path.join(self.niidir, nii))
