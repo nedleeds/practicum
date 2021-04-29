@@ -24,15 +24,16 @@ class display():
         self.cmp = colormap.lower()
         self.opt = opt
 
-        if self.len==1 and self.idx==False:
-            plt.figure(figsize=(15,15))
-            if self.opt.lower() =='hist' : plt.hist(self.images)
-            else : plt.imshow(self.images, cmap='gray'), plt.axis(False)
+        if self.len==1 : 
+            if self.idx==False:
+                plt.figure(figsize=(15,15))
+                if self.opt.lower() =='hist' : plt.hist(self.images)
+                else : plt.imshow(self.images, cmap='gray'), plt.axis(False)
             
-        elif self.len==1 and self.idx:
-            plt.figure(figsize=(15,15))
-            if self.opt.lower() =='hist' : plt.hist(self.images), plt.title(f'octa img[{self.idx}]')
-            else : plt.imshow(self.images, cmap='gray'), plt.title(f'octa img[{self.idx}]'), plt.axis(False)
+            elif self.idx:
+                plt.figure(figsize=(15,15))
+                if self.opt.lower() =='hist' : plt.hist(self.images), plt.title(f'octa img[{self.idx}]')
+                else : plt.imshow(self.images, cmap='gray'), plt.title(f'octa img[{self.idx}]'), plt.axis(False)
             
         elif self.len>1:
             if self.num>1:
@@ -54,7 +55,7 @@ class display():
                 if self.opt.lower()=='hist' : plt.hist(self.images[i]), plt.title(f'octa img[{i}]')
                 else : plt.imshow(self.images[i], cmap=self.cmp), plt.title(f'octa img[{i}]'), plt.axis(False)
         else:
-            print("you need to check the option again")
+            print("you need to check the length of images")
             pass
         plt.show()
         plt.close('all')

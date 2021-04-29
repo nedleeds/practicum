@@ -10,8 +10,8 @@ n = 3
 octa     = dataload(datadir="./data/OCTA(ILM_OPL)", outdir="./result" )()
 check    = display(octa)(numToShow=n, colormap='gray')
 
-nmz_octa = normalizing(octa)(fromMinusOne=True, opt="minmax") # opt="max" : /255. , opt="minmax"
-# check    = display(nmz_octa)(numToShow=n, opt='hist')
+nmz_octa = normalizing(octa)(fromMinusOne=False, opt="minmax") # opt="max" : /255. , opt="minmax"
+check    = display(nmz_octa)(numToShow=n, opt='hist')
 
 frangi_octa = filtering(nmz_octa)('frangi')
 # check    = display(eat_octa)(numToShow=n, colormap='gray')
