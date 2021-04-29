@@ -17,7 +17,8 @@ RUN apt-get update &&\
     libx11-dev -y \
     vim -y \
     libglib2.0-0 -y \
-    python3-tk -y
+    python3-tk -y \
+    sudo apt-get install libboost-python-dev build-essential -y
 
 RUN pip install --upgrade pip \
     pip install opencv-python \
@@ -34,7 +35,9 @@ RUN pip install --upgrade pip \
     keras \
     tensorflow-probability \
     SimpleITK \
-    times 
+    times \
+    sudo pip install medpy
+
 
 RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.1/zsh-in-docker.sh)" -- \
     -t cloud \
