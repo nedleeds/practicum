@@ -33,14 +33,20 @@ class filtering():
         [🔥️]  7) Wavelet
         [🔥️]  8) Curvelet
         '''
-        octa_nm     = (self.datas[0]*255).astype(np.uint8)
-        octa_adf    = self.adf(octa_nm, _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
-        octa_frangi = self.frangi(octa_adf, _sigmas=1, _scale_step=0.001, _black_ridges=False)
-        octa_clahe  = self.CLAHE(octa_frangi)
-        # octa_bmi    = self.binarymedian(octa_clahe)
-        octa_bmask  = self.otsu(octa_clahe)
-        
-        self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+        for i in range(len(self.datas)):
+            octa_nm     = (self.datas[i]*255).astype(np.uint8)
+            octa_adf    = self.adf(octa_nm, _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
+            octa_frangi = self.frangi(octa_adf, _sigmas=1, _scale_step=0.001, _black_ridges=False)
+            octa_clahe  = self.CLAHE(octa_frangi)
+            # octa_bmi    = self.binarymedian(octa_clahe)
+            octa_bmask  = self.otsu(octa_clahe)
+            
+            # plt.subplots(1,2, figsize=(20,10))
+            # plt.subplot(121), plt.imshow(octa_clahe, cmap='gray'), plt.title('CLAHE')
+            # plt.subplot(122), plt.imshow(octa_bmask,cmap='gray'), plt.title('Otsu')
+            # plt.show()
+            
+            self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
 
 
     def kmeans(self):
@@ -111,19 +117,19 @@ class filtering():
         
         plt.subplots(1,5, figsize=(50,10))
         plt.subplot(151), plt.imshow(nm,     cmap='gray'), plt.axis(False), plt.title('Original')
-        plt.subplot(152), plt.imshow(adf,    cmap='gray'), plt.axis(False), plt.title('Anystropic Diffusion')
+        plt.subplot(152), plt.imshow(adf,    cmap='gray'), plt.axis(False), plt.title('Anistropic Diffusion')
         plt.subplot(153), plt.imshow(frngi,  cmap='gray'), plt.axis(False), plt.title('Frangi')
         plt.subplot(154), plt.imshow(clahe,  cmap='gray'), plt.axis(False), plt.title('CLAHE')
         plt.subplot(155), plt.imshow(otsu,   cmap='gray'), plt.axis(False), plt.title('Otsu')
         plt.show()
 
-        plt.subplots(1,5, figsize=(50,10))
-        plt.subplot(151), plt.hist(nm),     plt.title('Original')
-        plt.subplot(152), plt.hist(adf),    plt.title('Anystropic Diffusion')
-        plt.subplot(153), plt.hist(frngi),  plt.title('Frangi')
-        plt.subplot(154), plt.hist(clahe),  plt.title('CLAHE')
-        plt.subplot(155), plt.hist(otsu),   plt.title('Otsu')
-        plt.show()
+        # plt.subplots(1,5, figsize=(50,10))
+        # plt.subplot(151), plt.hist(nm),     plt.title('Original')
+        # plt.subplot(152), plt.hist(adf),    plt.title('Anistropic Diffusion')
+        # plt.subplot(153), plt.hist(frngi),  plt.title('Frangi')
+        # plt.subplot(154), plt.hist(clahe),  plt.title('CLAHE')
+        # plt.subplot(155), plt.hist(otsu),   plt.title('Otsu')
+        # plt.show()
 
 
 
