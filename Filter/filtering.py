@@ -16,7 +16,7 @@ from .frangi                 import hessian, utils
 from skimage.filters         import frangi as frangi2d
 from medpy.filter.smoothing  import anisotropic_diffusion
 from .preprocessing           import normalizing
-
+from PIL import Image
 class filtering():
     def __init__(self, data=''):
         self.filter = ''
@@ -36,17 +36,19 @@ class filtering():
         '''
         # These code for making data.
         datadir="./data/OCTA(ILM_OPL)"
+        ogdir="/root/Share/data/dataset/og"
+        clahedir = "/root/Share/data/dataset/clahe"
+        bvmdir="/root/Share/data/dataset/bvm"
         for f in sorted(glob.glob(datadir+"/*"), key=os.path.getctime):
             octa = cv2.imread(f,cv2.IMREAD_GRAYSCALE)
-            octa_nm = normalizing(octa)
-            plt.subplots(1,2,figsize=(20,10))
-            plt.subplot(121), plt.imshow(octa_nm , cmap='gray')
-            plt.subplot(122), plt.hist(octa_nm)
-            plt.show()
-            octa_adf    = self.adf(octa_nm, _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
-            octa_frangi = self.frangi(octa_adf, _sigmas=1, _scale_step=0.001, _black_ridges=False)
-            octa_clahe  = self.CLAHE(octa_frangi)
+            octa_nm = normalizing(octa)(opt="max", fromMinusOne=False)
+            octa_adf    = self.adf(np.array(octa_nm), _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
+            octa_frangi = self.frangi(octa_adf, _sigmas=(0,1), _scale_step=0.1, _black_ridges=False)
+            octa_clahe  = self.CLAHE(octa_frangi*(1e+4))
             octa_bmask  = self.otsu(octa_clahe)
+            cv2.imwrite(os.path.join(ogdir,f.split('/')[-1]), octa)
+            cv2.imwrite(os.path.join(clahedir,f.split('/')[-1]), octa_clahe)
+            cv2.imwrite(os.path.join(bvmdir, f.split('/')[-1]), octa_bmask*255)
             self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
 
         # for i in range(len(self.datas)):
@@ -79,6 +81,7 @@ class filtering():
 
     def frangi(self, img, _sigmas=1, _scale_step=0.001, _black_ridges=False):
         print("{0:=^38}".format(" Frangi "))
+        img = (img*255).astype(np.uint8)
         return frangi2d(img, sigmas=_sigmas, scale_step=_scale_step, black_ridges=_black_ridges)
 
     def fuzzy(self):
@@ -208,4 +211,5 @@ class filtering():
         # plt.subplot(131), plt.imshow(octa_frangi[:,300,:], cmap='gray'), plt.axis(False)
         # plt.subplot(132), plt.imshow(octa_frangi[:,350,:], cmap='gray'), plt.axis(False)
         # plt.subplot(133), plt.imshow(octa_frangi[:,400,:], cmap='gray'), plt.axis(False)
-        # plt.show()
+        # plt.show() See [R10] for details.
+ 

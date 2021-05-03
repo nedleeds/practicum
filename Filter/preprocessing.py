@@ -19,23 +19,41 @@ class normalizing():
 
     def __call__(self, opt="minmax", fromMinusOne=False): # pos : 0~1, neg : -1~1
         if opt.lower() == "minmax":
-            for img in self.images:
-                xmax, xmin = img.max(), img.min()
+            if self.dim > 2:
+                for img in self.images:
+                    xmax, xmin = img.max(), img.min()
+                    img = (img - xmin)/(xmax - xmin) # min, max Normalizing : 0~1
+                    img = img.astype(float)
+                    if fromMinusOne : img = img*2-1 # modify the range to [-1~1]
+                    else : pass
+                    self.processed.append(img)
+            else:
+                img = self.images
+                xmax, xmin = self.images.max(), img.min()
                 img = (img - xmin)/(xmax - xmin) # min, max Normalizing : 0~1
                 img = img.astype(float)
                 if fromMinusOne : img = img*2-1 # modify the range to [-1~1]
                 else : pass
-                self.processed.append(img)
-            else: pass
+                return img
 
         elif opt.lower() == "max":
-            for img in self.images:
+            print(self.images.shape)
+            if self.dim >2 :
+                for img in self.images:
+                    img = img/255.
+                    img = img.astype(float)
+                    self.processed.append(img)
+                    if fromMinusOne : img = img*2-1 # modify the range to [-1~1]
+                    else : pass
+                    self.processed.append(img)
+            else : 
+                img = self.images
                 img = img/255.
                 img = img.astype(float)
                 self.processed.append(img)
                 if fromMinusOne : img = img*2-1 # modify the range to [-1~1]
                 else : pass
-                self.processed.append(img)
+                return img
 
         else:
             print("default option is 'minmax' you just put a wrong Normalizing optiong")
