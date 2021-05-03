@@ -8,13 +8,13 @@ from Filter             import filtering
 n = 3
 
 octa     = dataload(datadir="./data/OCTA(ILM_OPL)", outdir="./result" )()
-check    = display(octa)(numToShow=n, colormap='gray')
+# check    = display(octa)(numToShow=n, colormap='gray')
 
 nmz_octa = normalizing(octa)(fromMinusOne=False, opt="max") # opt="max" : /255. , opt="minmax"
 # check    = display(nmz_octa)(numToShow=n, opt='hist')
 
 frangi_octa = filtering(nmz_octa)('frangi')
-# check    = display(eat_octa)(numToShow=n, colormap='gray')
+# check    = display(frangi_octa)(numToShow=n, colormap='gray')
 
 # predicted = train('unet')(nmz_octa)
 # check    = display(predicted)(numToShow=n, colormap='gray')

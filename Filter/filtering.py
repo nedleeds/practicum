@@ -15,9 +15,10 @@ from .frangi                 import frangi as frangi3d
 from .frangi                 import hessian, utils
 from skimage.filters         import frangi as frangi2d
 from medpy.filter.smoothing  import anisotropic_diffusion
+from .preprocessing           import normalizing
 
 class filtering():
-    def __init__(self, data):
+    def __init__(self, data=''):
         self.filter = ''
         self.datas   = data
         self.niidir = "/root/Share/data/nii"
@@ -33,20 +34,35 @@ class filtering():
         [🔥️]  7) Wavelet
         [🔥️]  8) Curvelet
         '''
-        for i in range(len(self.datas)):
-            octa_nm     = (self.datas[i]*255).astype(np.uint8)
+        # These code for making data.
+        datadir="./data/OCTA(ILM_OPL)"
+        for f in sorted(glob.glob(datadir+"/*"), key=os.path.getctime):
+            octa = cv2.imread(f,cv2.IMREAD_GRAYSCALE)
+            octa_nm = normalizing(octa)
+            plt.subplots(1,2,figsize=(20,10))
+            plt.subplot(121), plt.imshow(octa_nm , cmap='gray')
+            plt.subplot(122), plt.hist(octa_nm)
+            plt.show()
             octa_adf    = self.adf(octa_nm, _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
             octa_frangi = self.frangi(octa_adf, _sigmas=1, _scale_step=0.001, _black_ridges=False)
             octa_clahe  = self.CLAHE(octa_frangi)
-            # octa_bmi    = self.binarymedian(octa_clahe)
             octa_bmask  = self.otsu(octa_clahe)
-            
-            # plt.subplots(1,2, figsize=(20,10))
-            # plt.subplot(121), plt.imshow(octa_clahe, cmap='gray'), plt.title('CLAHE')
-            # plt.subplot(122), plt.imshow(octa_bmask,cmap='gray'), plt.title('Otsu')
-            # plt.show()
-            
             self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+
+        # for i in range(len(self.datas)):
+        #     octa_nm     = (self.datas[i]*255).astype(np.uint8)
+        #     octa_adf    = self.adf(octa_nm, _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
+        #     octa_frangi = self.frangi(octa_adf, _sigmas=1, _scale_step=0.001, _black_ridges=False)
+        #     octa_clahe  = self.CLAHE(octa_frangi)
+        #     # octa_bmi    = self.binarymedian(octa_clahe)
+        #     octa_bmask  = self.otsu(octa_clahe)
+            
+        #     # plt.subplots(1,2, figsize=(20,10))
+        #     # plt.subplot(121), plt.imshow(octa_clahe, cmap='gray'), plt.title('CLAHE')
+        #     # plt.subplot(122), plt.imshow(octa_bmask,cmap='gray'), plt.title('Otsu')
+        #     # plt.show()
+            
+        #     self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
 
 
     def kmeans(self):
