@@ -4,3 +4,4 @@ data/
 /Deep_learning/logs/*
 checkpoints/*
 logs/*
+Curvelet/
