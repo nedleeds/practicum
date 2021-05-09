@@ -35,22 +35,33 @@ class filtering():
         [🔥️]  8) Curvelet
         '''
         # These code for making data.
-        datadir="./data/OCTA(ILM_OPL)"
-        ogdir="/root/Share/data/dataset/og"
+        datadir  = "./data/OCTA(ILM_OPL)"
+        ogdir    = "/root/Share/data/dataset/og"
         clahedir = "/root/Share/data/dataset/clahe"
-        bvmdir="/root/Share/data/dataset/bvm"
-        for f in sorted(glob.glob(datadir+"/*"), key=os.path.getctime):
-            octa = cv2.imread(f,cv2.IMREAD_GRAYSCALE)
-            octa_nm = normalizing(octa)(opt="max", fromMinusOne=False)
-            octa_adf    = self.adf(np.array(octa_nm), _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
-            octa_frangi = self.frangi(octa_adf, _sigmas=(0,1), _scale_step=0.1, _black_ridges=False)
-            octa_clahe  = self.CLAHE(octa_frangi*(1e+4))
-            octa_bmask  = self.otsu(octa_clahe)
-            cv2.imwrite(os.path.join(ogdir,f.split('/')[-1]), octa)
-            cv2.imwrite(os.path.join(clahedir,f.split('/')[-1]), octa_clahe)
-            cv2.imwrite(os.path.join(bvmdir, f.split('/')[-1]), octa_bmask*255)
-            self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+        bvmdir   = "/root/Share/data/dataset/bvm"
+        niipath  = "/root/Share/data/nii/10001.nii.gz"
 
+        nii = nib.load(niipath)
+        print(nii.get_fdata())
+        nii_arr = np.asarray(nii.get_fdata())
+        print(nii_arr.shape)
+        plt.imshow(nii_arr[:,400,:], cmap='gray')
+        plt.show()
+
+        ## processing all the images in directory 
+        # for f in sorted(glob.glob(datadir+"/*"), key=os.path.getctime):
+        #     octa = cv2.imread(f,cv2.IMREAD_GRAYSCALE)
+        #     octa_nm = normalizing(octa)(opt="max", fromMinusOne=False)
+        #     octa_adf    = self.adf(np.array(octa_nm), _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
+        #     octa_frangi = self.frangi(octa_adf, _sigmas=(0,1), _scale_step=0.1, _black_ridges=False)
+        #     octa_clahe  = self.CLAHE(octa_frangi*(1e+4))
+        #     octa_bmask  = self.otsu(octa_clahe)
+        #     cv2.imwrite(os.path.join(ogdir,f.split('/')[-1]), octa)
+        #     cv2.imwrite(os.path.join(clahedir,f.split('/')[-1]), octa_clahe)
+        #     cv2.imwrite(os.path.join(bvmdir, f.split('/')[-1]), octa_bmask*255)
+        #     self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+
+        ## adapting filtering to the image
         # for i in range(len(self.datas)):
         #     octa_nm     = (self.datas[i]*255).astype(np.uint8)
         #     octa_adf    = self.adf(octa_nm, _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)

@@ -18,8 +18,14 @@ RUN apt-get update &&\
     vim -y \
     libglib2.0-0 -y \
     python3-tk -y &&\
-    sudo apt-get install libboost-python-dev build-essential -y
+    sudo apt-get install libboost-python-dev build-essential -y \
+    libpcre3 libpcre3-dev
 
+RUN sudo apt-get install python3 python-dev python3-dev \
+    build-essential libssl-dev libffi-dev -y\
+    libxml2-dev libxslt1-dev zlib1g-dev -y\
+    python-pip
+    
 RUN pip install --upgrade pip &&\
     pip install opencv-python \
     scipy \
