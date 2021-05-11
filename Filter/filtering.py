@@ -39,14 +39,13 @@ class filtering():
         ogdir    = "/root/Share/data/dataset/og"
         clahedir = "/root/Share/data/dataset/clahe"
         bvmdir   = "/root/Share/data/dataset/bvm"
-        niipath  = "/root/Share/data/nii/10001.nii.gz"
+        niipath  = "/root/Share/data/nii/10001_OCTA_seg.nii.gz"
 
         nii = nib.load(niipath)
         print(nii.get_fdata())
         nii_arr = np.asarray(nii.get_fdata())
         print(nii_arr.shape)
-        plt.imshow(nii_arr[:,400,:], cmap='gray')
-        plt.show()
+        
 
         ## processing all the images in directory 
         # for f in sorted(glob.glob(datadir+"/*"), key=os.path.getctime):
