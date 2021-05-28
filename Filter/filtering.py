@@ -35,17 +35,23 @@ class filtering():
         [🔥️]  8) Curvelet
         '''
         # These code for making data.
-        datadir  = "./data/OCTA(ILM_OPL)"
-        ogdir    = "/root/Share/data/dataset/og"
-        clahedir = "/root/Share/data/dataset/clahe"
-        bvmdir   = "/root/Share/data/dataset/bvm"
-        niipath  = "/root/Share/data/nii/10001_OCTA_seg.nii.gz"
+        datadir   = "./data/OCTA(ILM_OPL)"
+        ogdir     = "/root/Share/data/dataset/og"
+        clahedir  = "/root/Share/data/dataset/clahe"
+        bvmdir    = "/root/Share/data/dataset/bvm"
+        resultdir = "/root/Share/data/result"
 
-        nii = nib.load(niipath)
-        print(nii.get_fdata())
-        nii_arr = np.asarray(nii.get_fdata())
-        print(nii_arr.shape)
-        
+        niipath   = "/root/Share/data/nii/10001_OCTA_seg.nii.gz"
+        dns_nii_path = os.path.join(resultdir, "10001_dns_octa.nii.gz")
+
+        # nii = nib.load(niipath)
+        # print(nii.get_fdata())
+        # nii_arr = np.asarray(nii.get_fdata())
+        # print(nii_arr.shape)
+
+        dns_octa = nib.load(dns_nii_path)
+        frg_octa = frangi3d(dns_octa, scale_range=(1, 10), scale_step=0.001, alpha=0.5, beta=0.5, frangi_c=500, black_vessels=False)
+        nib.save(frg_octa, os.path.join(resultdir, "frangi3d.nii.gz"))
 
         ## processing all the images in directory 
         # for f in sorted(glob.glob(datadir+"/*"), key=os.path.getctime):

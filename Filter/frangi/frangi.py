@@ -4,7 +4,7 @@ from .utils import divide_nonzero
 from .hessian import absolute_hessian_eigenvalues
 
 
-def frangi(nd_array, scale_range=(1, 10), scale_step=2, alpha=0.5, beta=0.5, frangi_c=500, black_vessels=True):
+def frangi(nd_array, scale_range=1, scale_step=2, alpha=0.5, beta=0.5, frangi_c=500, black_vessels=True):
     print(nd_array.shape)
     if not nd_array.ndim == 3:
         raise(ValueError("Only 3 dimensions is currently supported"))
