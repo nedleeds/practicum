@@ -17,6 +17,15 @@ class unet():
         self.use_upsampling = p[5]
         self.concat_axis = -1
 
+    def __call__(self, input_imgs):
+        self.inputs = input_imgs
+        self.input_chn = np.shape(self.inputs)[-1] # 1 for gray scale, 3 for RGB
+        self.input_row = np.shape(self.inputs)[1]
+        self.input_col = np.shape(self.inputs)[2]
+        self.input_shape = (self.input_row, self.input_col, self.input_chn)
+        uNet = self.model(self.input_shape)
+        return uNet
+
     def encConv2Pool(self, inputs, dim=64, g='relu', numLayer="first"):
         encode  = MaxPool2D(pool_size=(2, 2), name=f"en_pool_{numLayer}")(inputs)
         encode = Conv2D(filters=dim, activation=g, **self.params, name=f"en_conv_{numLayer}_1")(encode)
@@ -40,7 +49,7 @@ class unet():
         return decode
 
     
-    def model(self, imgs_shape=(256,256,1), msks_shape=1, dropout=0.2):
+    def model(self, imgs_shape=(400,400,1), msks_shape=1, dropout=0.2):
         num_chan_in  = imgs_shape[-1]
         num_chan_out = 1
         # num_chan_out = msks_shape[self.concat_axis] #-----> mask는 나중에 classification / segmentation 다룰 때 적용.
@@ -68,12 +77,3 @@ class unet():
         unet_model = Model(inputs=[inputs], outputs=[output], name="2DUNet")
 
         return unet_model
-
-    def __call__(self, input_imgs):
-        self.inputs = input_imgs
-        self.input_chn = np.shape(self.inputs)[-1] # 1 for gray scale, 3 for RGB
-        self.input_row = np.shape(self.inputs)[1]
-        self.input_col = np.shape(self.inputs)[2]
-        self.input_shape = (self.input_row, self.input_col, self.input_chn)
-        uNet = self.model(self.input_shape)
-        return uNet

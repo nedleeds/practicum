@@ -36,7 +36,7 @@ class segnet():
         return decode
 
     
-    def model(self, imgs_shape=(256,256,1), msks_shape=1, dropout=0.2):
+    def model(self, imgs_shape=(400,400,1), msks_shape=1, dropout=0.2):
         num_chan_in  = imgs_shape[-1]
         num_chan_out = 1
         # num_chan_out = msks_shape[self.concat_axis] #-----> mask는 나중에 classification / segmentation 다룰 때 적용.

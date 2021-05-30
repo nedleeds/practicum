@@ -15,7 +15,7 @@ class model_select(object):
         if self.select.lower()=='unet':
             model = unet(params)(input_images)
         elif self.select.lower()=='segnet':
-            model = segnet()(input_images)
+            model = segnet(params)(input_images)
         else : pass
 
         return model
@@ -24,8 +24,14 @@ class compile_train():
     def __init__(self, selected_model, name, data):
         self.model_ = selected_model
         self.name   = name
-        self.train  = data[0]
-        self.valid  = data[1]
+        self.train_X  = data[0][0]
+        self.train_y  = data[0][1]
+        self.val_X  = data[1][0]
+        self.val_y  = data[1][1]
+        # print("self.train_X shape :", np.shape(self.train_X))
+        # print("self.train_y shape :", np.shape(self.train_y))
+        # print("self.val_X shape :", np.shape(self.val_X))
+        # print("self.val_y shape :", np.shape(self.val_y))
 
     def __call__(self, opt='Adam', lss='mse', metric=False, epoch=1000, batch=8, learn_r=0.0001):
         self.optimizer   = opt  
@@ -37,13 +43,13 @@ class compile_train():
         else:
             adam = optimizers.Adam(lr=learn_r)
             self.model_.compile(loss=self.loss, optimizer=adam)
-
-        self.model_.fit(self.train, self.train,
+        # print("right before calling self.model_.fit :",np.shape(self.train_X), np.shape(self.train_y))
+        self.model_.fit(self.train_X, self.train_y,
                         batch_size=batch,
                         epochs=epoch, 
                         verbose=1,
                         callbacks=self.get_callbacks(),
-                        validation_data=[self.valid, self.valid],
+                        validation_data=[self.val_X, self.val_y],
                         ) 
 
         return self.model_

@@ -27,39 +27,50 @@ class train():
         self.y = imgs[1]
         self.dX, self.rX, self.cX = np.shape(self.X)
         self.dy, self.ry, self.cy = np.shape(self.y)
-        for i in range(self.dX):
-            print('hello')
-            plt.subplots(1,2, figsize=(20,10))
-            plt.subplot(121),plt.imshow(self.dX[i], cmap='gray')
-            plt.subplot(122),plt.imshow(self.dy[i], cmap='gray')
-            plt.show()
-        # self.train, self.test  = train_test_split(self.X, test_size=0.1, shuffle=True)
-        # self.train, self.valid = train_test_split(self.train, test_size=0.3, shuffle=True)
-        
-        return
-        print(np.shape(self.train), np.shape(self.valid), np.shape(self.test))
 
-        train = tf.reshape(self.train,(-1, self.r, self.c, 1))
-        valid = tf.reshape(self.valid,(-1, self.r, self.c, 1))
-        test  = tf.reshape(self.test ,(-1, self.r, self.c, 1))
         
-        train_valid = [train, valid]
+        X_train, self.test_X, self.train_y, self.test_y = train_test_split(self.X, self.y, test_size=0.1, random_state=42)
+        self.train_X, self.val_X, self.train_y, self.val_y = train_test_split(X_train, self.train_y, test_size=0.3, random_state=42)
+        
+
+        self.train_X = tf.reshape(self.train_X,(-1, self.rX, self.cy, 1))
+        self.train_y = tf.reshape(self.train_y,(-1, self.rX, self.cy, 1))
+        self.val_X = tf.reshape(self.val_X,(-1, self.rX, self.cy, 1))
+        self.val_y = tf.reshape(self.val_y,(-1, self.rX, self.cy, 1))
+        self.test_X  = tf.reshape(self.test_X ,(-1, self.rX, self.cy, 1))
+        self.test_y  = tf.reshape(self.test_y,(-1, self.rX, self.cy, 1))
+
+        print(len(self.train_X),len(self.val_X), len(self.test_X))
+        print(len(self.train_y),len(self.val_y), len(self.test_y))
+        print(np.shape(self.train_X),np.shape(self.val_X), np.shape(self.test_X))
+        print(np.shape(self.train_y),np.shape(self.val_y), np.shape(self.test_y))
+
+        train_valid = [(self.train_X, self.train_y), (self.val_X, self.val_y)]
         
         # model building
         # 1. select model
-        selected_model = model_select(select=self.select)(train, self.model_parameter[self.select])
+        # print("when call model_selece :", np.shape(self.train_X))
+        selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select])
         selected_model.summary()
 
         # 2. compile model
-        compile_train(selected_model, self.select, train_valid)(opt='Adam', lss='mse', epoch=50, batch=4, learn_r=0.01)
+        # print("when call compile_train :", np.shape(self.train_X))
+        compile_train(selected_model, self.select, train_valid)(opt='sgd', lss='mse', epoch=100, batch=8, learn_r=0.001)
         
         # model prediction
         model_out = []
-        for i in range(len(test)):
-            a = selected_model(tf.reshape(self.test[i],(1, self.r, self.c, 1)))
-            model_out.append(np.reshape(a,(self.r,self.c)))
-
-        # cv2.imwrite('./result/predict.png', model_out[0])
+        
+        for i in range(len(self.test_X)):
+            predicted = selected_model.predict((np.expand_dims(self.test_X[i],0)))
+            model_out.append(np.reshape(predicted,(self.rX, self.cX)))
+            
+            plt.subplots(1,3, figsize=(21,7))
+            plt.subplot(131), plt.imshow(np.reshape(self.test_X[i],(self.rX, self.cX)), cmap='gray'), plt.title("predicted")
+            plt.subplot(132), plt.imshow(predicted.reshape(self.rX, self.cX), cmap='gray'), plt.title("predicted")
+            plt.subplot(133), plt.imshow(self.test_y[i], cmap='gray'), plt.title("ground truth")
+            # plt.show()
+            plt.savefig('./result/predict/predict_'+str(i)+'.png')
+        
 
         # # 가중치 로드
         # model.load_weights(checkpoint_path)
