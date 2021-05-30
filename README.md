@@ -9,16 +9,16 @@ ___
 - [O] 2. add displaying histogram option to displayData.py - opt:'hist'
 - [🔥️] 3. Image Processing
     - [_] 3-1) K-mean's binarization
-    - [_] 3-2) Otsu's
-    - [🔥️] 3-3) EAT : Enhaced Adaptive Frangi Filter
+    - [O] 3-2) Otsu's
+    - [O] 3-3) EAT : Enhaced Adaptive Frangi Filter
     - [_] 3-4) Fuzzy
     - [_] 3-5) Region Growing
-    - [_] 3-6) Anisotropic Diffusion Filter
-    - [🔥️] 3-7) Wavelet
-    - [_] 3-8) Curvelet
+    - [O] 3-6) Anisotropic Diffusion Filter
+    - [_] 3-7) Wavelet
+    - [🔥️] 3-8) Curvelet
 
 - [🔥️] 4. Deep Learning
-    - [🔥️] 4-1) U-NET
+    - [O] 4-1) U-NET
         > from [IntelAI-UNET](https://github.com/IntelAI/unet)
     - [_] 4-2) AE
     - [_] 4-3) VAE 
