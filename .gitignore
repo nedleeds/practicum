@@ -5,4 +5,4 @@ data/
 checkpoints/*
 logs/*
 Curvelet/
-result/*
+/result/*
