@@ -55,21 +55,23 @@ class train():
 
         # 2. compile model
         # print("when call compile_train :", np.shape(self.train_X))
-        compile_train(selected_model, self.select, train_valid)(opt='sgd', lss='mse', epoch=100, batch=8, learn_r=0.001)
+        compile_train(selected_model, self.select, train_valid)(opt='sgd', lss='mse', epoch=50, batch=16, learn_r=0.001)
         
         # model prediction
         model_out = []
         
+        
         for i in range(len(self.test_X)):
             predicted = selected_model.predict((np.expand_dims(self.test_X[i],0)))
             model_out.append(np.reshape(predicted,(self.rX, self.cX)))
-            
-            plt.subplots(1,3, figsize=(21,7))
-            plt.subplot(131), plt.imshow(np.reshape(self.test_X[i],(self.rX, self.cX)), cmap='gray'), plt.title("predicted")
+            plt.close('all')
+            plt.subplots(1,3, figsize=(21,7))    
+            plt.subplot(131), plt.imshow(np.reshape(self.test_X[i],(self.rX, self.cX)), cmap='gray'), plt.title("enface")
             plt.subplot(132), plt.imshow(predicted.reshape(self.rX, self.cX), cmap='gray'), plt.title("predicted")
             plt.subplot(133), plt.imshow(self.test_y[i], cmap='gray'), plt.title("ground truth")
-            # plt.show()
+            # # plt.show()
             plt.savefig('./result/predict/predict_'+str(i)+'.png')
+            
         
 
         # # 가중치 로드

@@ -17,13 +17,14 @@ from skimage.filters         import frangi as frangi2d
 from medpy.filter.smoothing  import anisotropic_diffusion
 from .preprocessing           import normalizing
 from PIL import Image
+
 class filtering():
     def __init__(self, data=''):
         self.filter = ''
         self.datas   = data
         self.niidir = "/root/Share/data/nii"
 
-    def __call__(self, f):
+    def __call__(self, filter_name):
         '''
         [  ]  1) K-mean's binarization
         [OK]  2) Otsu's
@@ -35,7 +36,7 @@ class filtering():
         [🔥️]  8) Curvelet
         '''
         # These code for making data.
-        datadir   = "./data/OCTA(ILM_OPL)"
+        datadir   = "/root/Share/data/OCTA-500_gt/OCTA_6M/Projection Maps/OCTA(ILM_OPL)"
         ogdir     = "/root/Share/data/dataset/og"
         clahedir  = "/root/Share/data/dataset/clahe"
         bvmdir    = "/root/Share/data/dataset/bvm"
@@ -49,38 +50,57 @@ class filtering():
         # nii_arr = np.asarray(nii.get_fdata())
         # print(nii_arr.shape)
 
-        dns_octa = nib.load(dns_nii_path)
-        frg_octa = frangi3d(dns_octa, scale_range=(1, 10), scale_step=0.001, alpha=0.5, beta=0.5, frangi_c=500, black_vessels=False)
-        nib.save(frg_octa, os.path.join(resultdir, "frangi3d.nii.gz"))
+        # dns_octa = nib.load(dns_nii_path)
+        # frg_octa = frangi3d(dns_octa, scale_range=(1, 10), scale_step=0.001, alpha=0.5, beta=0.5, frangi_c=500, black_vessels=False)
+        # nib.save(frg_octa, os.path.join(resultdir, "frangi3d.nii.gz"))
+        
+        '''
+        # matlab's frangi output image -> adapting CLAHE+OTSU with python
+        octa_nm = normalizing(self.datas)(opt="max", fromMinusOne=False)
+        octa_clahe  = self.CLAHE(octa_nm*(0.04))
+        octa_bmask  = self.otsu(octa_clahe)
 
-        ## processing all the images in directory 
-        # for f in sorted(glob.glob(datadir+"/*"), key=os.path.getctime):
-        #     octa = cv2.imread(f,cv2.IMREAD_GRAYSCALE)
-        #     octa_nm = normalizing(octa)(opt="max", fromMinusOne=False)
-        #     octa_adf    = self.adf(np.array(octa_nm), _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
-        #     octa_frangi = self.frangi(octa_adf, _sigmas=(0,1), _scale_step=0.1, _black_ridges=False)
-        #     octa_clahe  = self.CLAHE(octa_frangi*(1e+4))
-        #     octa_bmask  = self.otsu(octa_clahe)
-        #     cv2.imwrite(os.path.join(ogdir,f.split('/')[-1]), octa)
-        #     cv2.imwrite(os.path.join(clahedir,f.split('/')[-1]), octa_clahe)
-        #     cv2.imwrite(os.path.join(bvmdir, f.split('/')[-1]), octa_bmask*255)
-        #     self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+        plt.subplots(1,2, figsize=(15,8))
+        plt.subplot(121), plt.imshow(octa_clahe, cmap='gray')
+        plt.subplot(122),plt.imshow(octa_bmask, cmap='gray')
+        plt.show()
 
-        ## adapting filtering to the image
-        # for i in range(len(self.datas)):
-        #     octa_nm     = (self.datas[i]*255).astype(np.uint8)
-        #     octa_adf    = self.adf(octa_nm, _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
-        #     octa_frangi = self.frangi(octa_adf, _sigmas=1, _scale_step=0.001, _black_ridges=False)
-        #     octa_clahe  = self.CLAHE(octa_frangi)
-        #     # octa_bmi    = self.binarymedian(octa_clahe)
-        #     octa_bmask  = self.otsu(octa_clahe)
+        cv2.imwrite(os.path.join(clahedir,'clahe_out.png'), octa_clahe)
+        cv2.imwrite(os.path.join(bvmdir, 'otsu_out.png'), octa_bmask*255)
+        # self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+        '''
+        
+        # processing all the images in directory 
+        for f in sorted(glob.glob(datadir+"/*"), key=os.path.getctime):
+            octa = cv2.imread(f,cv2.IMREAD_GRAYSCALE)
+            octa_nm = normalizing(octa)(opt="max", fromMinusOne=False)
+            octa_adf    = self.adf(np.array(octa_nm), _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
+            octa_frangi = self.frangi(octa_adf, _sigmas=(0,1), _scale_step=0.1, _black_ridges=False)
+            octa_clahe  = self.CLAHE(octa_frangi*(1e+4))
+            octa_bmask  = self.otsu(octa_clahe)
+
+            cv2.imwrite(os.path.join(ogdir,f.split('/')[-1]), octa)
+            cv2.imwrite(os.path.join(clahedir,f.split('/')[-1]), octa_clahe)
+            cv2.imwrite(os.path.join(bvmdir, f.split('/')[-1]), octa_bmask*255)
+            # self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+        
+        '''
+        # adapting filtering to the image
+        for i in range(len(self.datas)):
+            octa_nm     = (self.datas[i]*255).astype(np.uint8)
+            octa_adf    = self.adf(octa_nm, _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
+            octa_frangi = self.frangi(octa_adf, _sigmas=1, _scale_step=0.001, _black_ridges=False)
+            octa_clahe  = self.CLAHE(octa_frangi)
+            # octa_bmi    = self.binarymedian(octa_clahe)
+            octa_bmask  = self.otsu(octa_clahe)
             
-        #     # plt.subplots(1,2, figsize=(20,10))
-        #     # plt.subplot(121), plt.imshow(octa_clahe, cmap='gray'), plt.title('CLAHE')
-        #     # plt.subplot(122), plt.imshow(octa_bmask,cmap='gray'), plt.title('Otsu')
-        #     # plt.show()
+            # plt.subplots(1,2, figsize=(20,10))
+            # plt.subplot(121), plt.imshow(octa_clahe, cmap='gray'), plt.title('CLAHE')
+            # plt.subplot(122), plt.imshow(octa_bmask,cmap='gray'), plt.title('Otsu')
+            # plt.show()
             
-        #     self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+            # self.display(octa_nm, octa_adf, octa_frangi, octa_clahe, octa_bmask)
+        '''
 
 
     def kmeans(self):

@@ -77,7 +77,7 @@ class compile_train():
         print("LOGSDIR = {}".format(LOGSDIR))
         print("CHCKDIR = {}".format(CHCKDIR))
 
-        early_stopping  = K.callbacks.EarlyStopping(patience=10, restore_best_weights=True), 
+        early_stopping  = K.callbacks.EarlyStopping(patience=50, restore_best_weights=True), 
         model_ckpt      = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(CHCKDIR,'model.{epoch:02d}-{loss:.2f}.h5'),
                                                              save_best_only=True ),
         board_ckpt      = tf.keras.callbacks.TensorBoard(log_dir = LOGSDIR)

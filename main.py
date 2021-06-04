@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np 
 import matplotlib
@@ -10,13 +11,18 @@ from Filter             import filtering
 
 n = 3
 
-octa = dataload(datadir="./data/dataset/og", outdir="./result")()
-mask = dataload(datadir="./data/dataset/bvm", outdir="./result")()
+# octa = dataload(datadir="/root/Share/data/OCTA-500_gt/OCTA_6M/Projection Maps/OCTA(ILM_OPL)", outdir="./result")()
+octa = dataload(datadir="/root/Share/data/dataset/og", outdir="./result")()
+mask = dataload(datadir="/root/Share/data/dataset/bvm", outdir="./result")()
 # check    = display(mask)(numToShow=n, colormap='gray')
 
 nmz_octa = normalizing(octa)(fromMinusOne=False, opt="max") # opt="max" : /255. , opt="minmax"
 nmz_mask = normalizing(mask)(fromMinusOne=False, opt="max") # opt="max" : /255. , opt="minmax"
 # check    = display(nmz_octa)(numToShow=n, opt='hist')
+
+# # This is for frangi filtered(from MATLAB) => CLAHE + OTSU (PYTHON)
+# img = cv2.imread(os.path.join("/root/Share/data/dataset/og","frangi_out.png"), cv2.IMREAD_GRAYSCALE)
+# frangi_octa = filtering(img)('frangi')
 
 # frangi_octa = filtering(nmz_octa)('frangi')
 # check    = display(frangi_octa)(numToShow=n, colormap='gray')
