@@ -75,7 +75,7 @@ class filtering():
             octa = cv2.imread(f,cv2.IMREAD_GRAYSCALE)
             octa_nm = normalizing(octa)(opt="max", fromMinusOne=False)
             octa_adf    = self.adf(np.array(octa_nm), _niter=2, _kappa=90, _gamma=0.1, _voxelspacing=None, _option=3)
-            octa_frangi = self.frangi(octa_adf, _sigmas=(0,1), _scale_step=0.1, _black_ridges=False)
+            octa_frangi = self.frangi(octa_adf, _sigmas=(0, 1), _scale_step=0.1, _black_ridges=False)
             octa_clahe  = self.CLAHE(octa_frangi*(1e+4))
             octa_bmask  = self.otsu(octa_clahe)
 
