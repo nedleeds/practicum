@@ -38,7 +38,7 @@ class train():
         # 2. compile model
         # print("when call compile_train :", np.shape(self.train_X))
         compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=100, 
-                                                                batch=32, learn_r=0.001,
+                                                                batch=8, learn_r=0.001,
                                                                 metric=[metrics.MeanSquaredError(),metrics.AUC()])
         
         # model prediction
