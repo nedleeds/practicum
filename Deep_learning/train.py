@@ -17,9 +17,9 @@ class train():
     def __init__(self,model_name='unet'):
         self.select = model_name
         self.model_parameter = {
-            'unet' : [(3,3), (2,2), (1, 1), 'same', 'he_uniform', True], # [ k, kT, s, p, i, upsample ]
+            'unet'   : [(3,3), (1, 1), 'same', 'he_uniform', True, True], # [ k, kT, s, p, i, upsample, MUP]
             'segnet' : [(3,3), (1, 1), 'same', 'he_uniform', True], # [ k, s, p, i, upsample ]
-            'vae' : [3, 2, 'same'] # [k, s, p]
+            'vae'    : [3, 2, 'same'] # [k, s, p]
         }
     def __call__(self, imgs):
         self.X = imgs[0]
@@ -37,13 +37,12 @@ class train():
 
         # 2. compile model
         # print("when call compile_train :", np.shape(self.train_X))
-        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=100, 
+        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=50, 
                                                                 batch=8, learn_r=0.001,
                                                                 metric=[metrics.MeanSquaredError(),metrics.AUC()])
         
         # model prediction
         model_out = []
-        
         
         for i in range(len(self.test_X)):
             predicted = selected_model.predict((np.expand_dims(self.test_X[i],0)))
@@ -54,10 +53,8 @@ class train():
             plt.subplot(132), plt.imshow(predicted.reshape(self.rX, self.cX), cmap='gray'), plt.title("predicted")
             plt.subplot(133), plt.imshow(self.test_y[i], cmap='gray'), plt.title("ground truth")
             # # plt.show()
-            plt.savefig('/root/Share/data/result/predict/predict_'+str(i)+'.png')
-            
+            plt.savefig('/root/Share/data/result/predict/predict_'+str(i)+'.png')    
         
-
         # # 가중치 로드
         # model.load_weights(checkpoint_path)
 
