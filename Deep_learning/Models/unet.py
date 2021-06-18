@@ -40,7 +40,7 @@ class unet():
             decode = UpSampling2D(name=f"de_up_{numLayer}",interpolation='bilinear')(inputs)
         else : 
             decode = Conv2DTranspose(filters=dim, **self.params_trans, name=f"de_convT_{numLayer}")(inputs)
-        
+    
         decode = concatenate([decode, concat_in], axis=self.concat_axis, name=f"de_cat_{numLayer}")
         decode = Conv2D(filters=dim, activation='relu', **self.params, name=f"de_conv_{numLayer}_1")(decode)
         encode = BatchNormalization()(decode)

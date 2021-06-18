@@ -12,7 +12,7 @@ from Filter             import filtering
 n = 3
 
 # octa = dataload(datadir="/root/Share/data/OCTA-500_gt/OCTA_6M/Projection Maps/OCTA(ILM_OPL)", outdir="./result")()
-octa = dataload(datadir="/root/Share/data/dataset/og", outdir="/root/Share/data/result")()
+octa = dataload(datadir="/root/Share/data/dataset/og",  outdir="/root/Share/data/result")()
 mask = dataload(datadir="/root/Share/data/dataset/bvm", outdir="/root/Share/data/result")()
 # check    = display(mask)(numToShow=n, colormap='gray')
 

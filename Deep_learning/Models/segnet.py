@@ -14,7 +14,7 @@ class segnet():
         self.use_upsampling = p[4]
 
     def encConv2Pool(self, inputs, dim=64, g='relu', numLayer="first"):
-        encode  = MaxPool2D(pool_size=(2, 2), name=f"en_pool_{numLayer}")(inputs)
+        encode = MaxPool2D(pool_size=(2, 2), name=f"en_pool_{numLayer}")(inputs)
         encode = Conv2D(filters=dim, activation=g, **self.params, name=f"en_conv_{numLayer}_1")(encode)
         encode = BatchNormalization()(encode)
         encode = Conv2D(filters=dim, activation=g, **self.params, name=f"en_conv_{numLayer}_2")(encode)

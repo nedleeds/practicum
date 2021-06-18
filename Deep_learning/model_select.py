@@ -1,10 +1,9 @@
 import os
 import shutil
-import keras as K
 import tensorflow as tf 
 import numpy as np
 
-from .Models import unet, segnet, vae
+from .Models import unet, segnet
 from keras   import optimizers
 
 import tensorflow.keras.backend as K
@@ -18,8 +17,8 @@ class model_select(object):
     def __call__(self, input_images, params):
         if self.select.lower()=='unet':
             model = unet(params)(input_images)
-        elif self.select.lower()=='vae';
-            model = vae(params)(input_images)
+        # elif self.select.lower()=='vae':
+        #     model = vae(params)(input_images)
         elif self.select.lower()=='segnet':
             model = segnet(params)(input_images)
         else : pass
@@ -34,10 +33,6 @@ class compile_train():
         self.train_y  = data[0][1]
         self.val_X  = data[1][0]
         self.val_y  = data[1][1]
-        # print("self.train_X shape :", np.shape(self.train_X))
-        # print("self.train_y shape :", np.shape(self.train_y))
-        # print("self.val_X shape :", np.shape(self.val_X))
-        # print("self.val_y shape :", np.shape(self.val_y))
 
     def __call__(self, opt='Adam', lss='mse', metric=False, epoch=1000, batch=8, learn_r=0.0001):
         self.optimizer   = opt  
@@ -49,6 +44,7 @@ class compile_train():
         else:
             adam = optimizers.Adam(lr=learn_r)
             self.model_.compile(loss=self.loss, optimizer=adam)
+
         # print("right before calling self.model_.fit :",np.shape(self.train_X), np.shape(self.train_y))
         self.model_.fit(self.train_X, self.train_y,
                         batch_size=batch,
@@ -57,7 +53,7 @@ class compile_train():
                         callbacks=self.get_callbacks(),
                         validation_data=[self.val_X, self.val_y],
                         ) 
-
+        
         return self.model_
 
     def get_callbacks(self):
@@ -92,12 +88,12 @@ class compile_train():
         
         return model_callbacks
 
-    def myloss(self, input_octa, gt, predicted):
-        l1 = ContrastiveLoss(margin=1)(input_octa, predicted)
-        l2 = tf.reduce_mean(tf.square(tf.sub(gt,predicted)))
-
-        total_loss = l1*0.2 + l2*0.8
-
+    def myloss(self, input_octa, predicted):
+        # l1 = ContrastiveLoss(margin=1)(input_octa, predicted)
+        # # l2 = tf.reduce_mean(tf.square(tf.sub(gt,predicted)))
+        # # total_loss = l1*0.2 + l2*0.8
+        # total_loss = l1
+        total_loss = 'bce'
         return total_loss
 
 def contrastive_loss(y_true, y_pred):
@@ -117,8 +113,9 @@ class ContrastiveLoss(Loss):
     def __init__(self, margin=1):
         super().__init__()
         self.margin = margin
+        
     def call(self, y_true, y_pred):
-        square_pred = K.square(y_pred)
+        square_pred   = K.square(y_pred)
         margin_square = K.square(K.maximum(self.margin - y_pred, 0))
         return K.mean(y_true * square_pred + (1 - y_true) * margin_square)
 
