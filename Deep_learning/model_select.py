@@ -44,7 +44,7 @@ class compile_train():
         else:
             adam = optimizers.Adam(lr=learn_r)
             self.model_.compile(loss=self.loss, optimizer=adam)
-
+        
         self.model_.fit(self.train_X, self.train_y,
                         batch_size=batch,
                         epochs=epoch, 
