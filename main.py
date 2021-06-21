@@ -19,7 +19,8 @@ label = dataload(datadir="/root/Share/data/dataset/label", outdir="/root/Share/d
 # check    = display(mask)(numToShow=n, colormap='gray')
 nmz_octa = normalizing(octa)(fromMinusOne=False, opt="max") # opt="max" : /255. , opt="minmax"
 nmz_mask = normalizing(mask)(fromMinusOne=False, opt="max") # opt="max" : /255. , opt="minmax"
-check    = display(nmz_octa)(numToShow=n, opt='hist')
+check    = display((nmz_octa, label))(numToShow=n)
+check    = display((nmz_octa, label))(numToShow=n, opt='hist')
 
 # # This is for frangi filtered(from MATLAB) => CLAHE + OTSU (PYTHON)
 # img = cv2.imread(os.path.join("/root/Share/data/dataset/og","frangi_out.png"), cv2.IMREAD_GRAYSCALE)

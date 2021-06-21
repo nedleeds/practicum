@@ -22,8 +22,9 @@ class train():
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
     def __call__(self, imgs):
-        self.X = imgs[0]
-        self.y = imgs[1]
+        self.X = imgs[0]    # self.X -> image dictionaries - subject num : [octa images]
+        self.y = imgs[1]    # self.y -> label dictionaries - subject num : [disease labels]
+        
         self.dX, self.rX, self.cX = np.shape(self.X)
         self.dy, self.ry, self.cy = np.shape(self.y)
         
@@ -37,8 +38,7 @@ class train():
         return
         # 2. compile model
         # print("when call compile_train :", np.shape(self.train_X))
-        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=50, 
-                                                                batch=8, learn_r=0.001,
+        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=50, batch=8, learn_r=0.001,
                                                                 metric=[metrics.MeanSquaredError(),metrics.AUC()])
         
         # model prediction
@@ -77,5 +77,3 @@ class train():
 
         train_valid = [(self.train_X, self.train_y), (self.val_X, self.val_y)]
         return train_valid
-        
-
