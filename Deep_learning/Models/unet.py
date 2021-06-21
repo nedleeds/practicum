@@ -163,7 +163,13 @@ class unet():
         encode = Conv2D(filters=dim, **self.params, name=f"en_conv_{numLayer}_2")(encode)
         encode = BatchNormalization()(encode)
         encode = Activation(g)(encode)
-        encode = Dropout(0.5)(encode, training=True)
+        if numLayer=="L1" : encode = Dropout(0.2)(encode, training=True) # fine part
+        elif numLayer=="L2" : encode = Dropout(0.2)(encode, training=True) # fine part
+        elif numLayer=="L3" : encode = Dropout(0.3)(encode, training=True) # coarse part
+        elif numLayer=="L4" : encode = Dropout(0.3)(encode, training=True) # coarse part
+        elif numLayer=="L5" : encode = Dropout(0.6)(encode, training=True) # coarse part
+        else : pass
+
         value, position = MaxPoolingWithArgmax2D()(encode) 
         return value, position
 
@@ -226,12 +232,12 @@ class unet():
             (v2,p2) = self.encConv2MaxPool(inputs=v1, dim=input_dim*2,  g='sigmoid', numLayer="L2")   # Layer 2
             (v3,p3) = self.encConv2MaxPool(inputs=v2, dim=input_dim*4,  g='sigmoid', numLayer="L3")   # Layer 3
             (v4,p4) = self.encConv2MaxPool(inputs=v3, dim=input_dim*8,  g='sigmoid', numLayer="L4")   # Layer 4
-            # (v5,p5) = self.encConv2MaxPool(inputs=v4, dim=input_dim*16, g='sigmoid', numLayer="L5")  # Layer 5
+            (v5,p5) = self.encConv2MaxPool(inputs=v4, dim=input_dim*16, g='sigmoid', numLayer="L5")  # Layer 5
             ### decoder start
             # v4_d = self.decCatConv2UnPool(inputs=(v5,p5),   concat_in=v4, dim=input_dim*8, numLayer="L4") # Layer 4
-            # v3_d = self.decCatConv2UnPool(inputs=(v4_d,p4), concat_in=v3, dim=input_dim*4, numLayer="L3") # Layer 3
-            # v4_d = self.decCatConv2Up(inputs=v5, concat_in=False, dim=input_dim*8, numLayer="L4") # Layer 4
-            v3_d = self.decCatConv2Up(inputs=v4, concat_in=False, dim=input_dim*4, numLayer="L3") # Layer 3
+            v4_d = self.decCatConv2Up(inputs=v5, concat_in=False, dim=input_dim*8, numLayer="L4") # Layer 4
+            v3_d = self.decCatConv2UnPool(inputs=(v4_d,p4), concat_in=v3, dim=input_dim*4, numLayer="L3") # Layer 3
+            # v3_d = self.decCatConv2Up(inputs=v4, concat_in=False, dim=input_dim*4, numLayer="L3") # Layer 3
             v2_d = self.decCatConv2UnPool(inputs=(v3_d,p3), concat_in=v2, dim=input_dim*2, numLayer="L2") # Layer 2
             v1_d = self.decCatConv2UnPool(inputs=(v2_d,p2), concat_in=v1, dim=input_dim*1, numLayer="L1") # Layer 1
             l1_decode = v1_d

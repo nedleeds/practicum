@@ -18,7 +18,7 @@ class train():
         self.select = model_name
         self.model_parameter = {
             'unet'   : [(3,3), (1, 1), 'same', 'he_uniform', True, True], # [ k, kT, s, p, i, upsample, MUP]
-            'segnet' : [(3,3), (1, 1), 'same', 'he_uniform', True], # [ k, s, p, i, upsample ]
+            'vgg'    : [],
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
     def __call__(self, imgs):
@@ -34,7 +34,7 @@ class train():
         # print("when call model_selece :", np.shape(self.train_X))
         selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select])
         selected_model.summary()
-
+        return
         # 2. compile model
         # print("when call compile_train :", np.shape(self.train_X))
         compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=50, 

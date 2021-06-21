@@ -27,5 +27,5 @@ nmz_mask = normalizing(mask)(fromMinusOne=False, opt="max") # opt="max" : /255. 
 # frangi_octa = filtering(nmz_octa)('frangi')
 # check    = display(frangi_octa)(numToShow=n, colormap='gray')
 
-predicted = train('unet')((nmz_octa, nmz_mask))
+predicted = train('vgg')((nmz_octa, nmz_mask))
 # check    = display(predicted)(numToShow=n, colormap='gray')

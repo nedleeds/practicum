@@ -3,7 +3,7 @@ import shutil
 import tensorflow as tf 
 import numpy as np
 
-from .Models import unet, segnet
+from .Models import unet, vgg
 from keras   import optimizers
 
 import tensorflow.keras.backend as K
@@ -19,8 +19,8 @@ class model_select(object):
             model = unet(params)(input_images)
         # elif self.select.lower()=='vae':
         #     model = vae(params)(input_images)
-        elif self.select.lower()=='segnet':
-            model = segnet(params)(input_images)
+        elif self.select.lower()=='vgg':
+            model = vgg()(input_images)
         else : pass
 
         return model
@@ -49,7 +49,7 @@ class compile_train():
         self.model_.fit(self.train_X, self.train_y,
                         batch_size=batch,
                         epochs=epoch, 
-                        verbose=1,
+                        verbose=2,
                         callbacks=self.get_callbacks(),
                         validation_data=[self.val_X, self.val_y],
                         ) 
