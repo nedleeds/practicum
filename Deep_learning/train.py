@@ -54,7 +54,7 @@ class train():
             plt.subplot(133), plt.imshow(self.test_y[i], cmap='gray'), plt.title("ground truth")
             # # plt.show()
             plt.savefig('/root/Share/data/result/predict/predict_'+str(i)+'.png')    
-        
+
         # # 가중치 로드
         # model.load_weights(checkpoint_path)
 
@@ -65,8 +65,8 @@ class train():
         return model_out
 
     def data_split(self):
-        X_train, self.test_X, self.train_y, self.test_y = train_test_split(self.X, self.y, test_size=0.1, random_state=42)
-        self.train_X, self.val_X, self.train_y, self.val_y = train_test_split(X_train, self.train_y, test_size=0.3, random_state=42)
+        X_train,     self.test_X, self.train_y, self.test_y = train_test_split(self.X, self.y, test_size=0.1, random_state=42)
+        self.train_X, self.val_X, self.train_y, self.val_y  = train_test_split(X_train, self.train_y, test_size=0.3, random_state=42)
 
         self.train_X = tf.reshape(self.train_X, (-1, self.rX, self.cy, 1))
         self.train_y = tf.reshape(self.train_y, (-1, self.rX, self.cy, 1))

@@ -45,7 +45,6 @@ class compile_train():
             adam = optimizers.Adam(lr=learn_r)
             self.model_.compile(loss=self.loss, optimizer=adam)
 
-        # print("right before calling self.model_.fit :",np.shape(self.train_X), np.shape(self.train_y))
         self.model_.fit(self.train_X, self.train_y,
                         batch_size=batch,
                         epochs=epoch, 
@@ -65,7 +64,7 @@ class compile_train():
             os.mkdir(CHCKDIR)
             os.mkdir(LOGSDIR)
 
-        if os.path.isdir(CHCKDIR) :
+        if os.path.isdir(CHCKDIR):
             shutil.rmtree(CHCKDIR)
         if os.path.isdir(LOGSDIR):
             shutil.rmtree(LOGSDIR)
@@ -93,7 +92,7 @@ class compile_train():
         # # l2 = tf.reduce_mean(tf.square(tf.sub(gt,predicted)))
         # # total_loss = l1*0.2 + l2*0.8
         # total_loss = l1
-        total_loss = 'bce'
+        # total_loss = 'bce'
         return total_loss
 
 def contrastive_loss(y_true, y_pred):

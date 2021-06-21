@@ -22,17 +22,18 @@ class vgg():
         input_chn = np.shape(self.inputs)[-1] # 1 for gray scale, 3 for RGB
         input_row = np.shape(self.inputs)[1]
         input_col = np.shape(self.inputs)[2]
+
         input_shape = (input_row, input_col, input_chn)
-         
+        model = models.Sequential()
+        model.add(Input(shape=input_shape, name="gray_input"))
+        model.add(layers.Conv2D(3, (3, 3), padding='same', activation='relu', name="rgb_input"))
         pre_trained_vgg = VGG16(weights='imagenet', include_top=False, input_shape=(input_row, input_col, 3))
         pre_trained_vgg.trainable = False
-        pre_trained_vgg.summary()
-        additional_model = models.Sequential()
-        additional_model.add(pre_trained_vgg)
-        additional_model.add(layers.Flatten())
-        additional_model.add(layers.Dense(4096, activation='relu'))
-        additional_model.add(layers.Dense(2048, activation='relu'))
-        additional_model.add(layers.Dense(1024, activation='relu'))
-        additional_model.add(layers.Dense(6, activation='softmax'))
-        # additional_model.summary()
-        return additional_model
+        model.add(pre_trained_vgg)
+        model.add(layers.Flatten())
+        model.add(layers.Dense(4096, activation='relu'))
+        model.add(layers.Dense(2048, activation='relu'))
+        model.add(layers.Dense(1024, activation='relu'))
+        model.add(layers.Dense(6, activation='softmax'))
+        
+        return model
