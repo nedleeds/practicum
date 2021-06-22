@@ -17,10 +17,10 @@ class model_select(object):
     def __call__(self, input_images, params):
         if self.select.lower()=='unet':
             model = unet(params)(input_images)
+        elif self.select.lower()=='vgg':
+            model = vgg(params)(input_images)
         # elif self.select.lower()=='vae':
         #     model = vae(params)(input_images)
-        elif self.select.lower()=='vgg':
-            model = vgg()(input_images)
         else : pass
 
         return model

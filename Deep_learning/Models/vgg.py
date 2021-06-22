@@ -14,8 +14,8 @@ import math
  
  
 class vgg():
-    def __init__(self):
-        pass
+    def __init__(self,classnum=6):
+        self.classnum=classnum
 
     def __call__(self, input_imgs):
         self.inputs = input_imgs
@@ -34,6 +34,6 @@ class vgg():
         model.add(layers.Dense(4096, activation='relu'))
         model.add(layers.Dense(2048, activation='relu'))
         model.add(layers.Dense(1024, activation='relu'))
-        model.add(layers.Dense(6, activation='softmax'))
+        model.add(layers.Dense(self.classnum, activation='softmax'))
         
         return model

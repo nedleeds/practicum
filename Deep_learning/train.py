@@ -18,15 +18,17 @@ class train():
         self.select = model_name
         self.model_parameter = {
             'unet'   : [(3,3), (1, 1), 'same', 'he_uniform', True, True], # [ k, kT, s, p, i, upsample, MUP]
-            'vgg'    : [],
+            'vgg'    : [6], # numbers of classes 
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
     def __call__(self, imgs):
-        self.X = imgs[0]    # self.X -> image dictionaries - subject num : [octa images]
-        self.y = imgs[1]    # self.y -> label dictionaries - subject num : [disease labels]
+        self.X = imgs.values()[0]    # self.X -> image dictionaries - subject num : [octa images]
+        self.y = imgs.values()[1]    # self.y -> label dictionaries - subject num : [disease labels]
         
-        self.dX, self.rX, self.cX = np.shape(self.X)
-        self.dy, self.ry, self.cy = np.shape(self.y)
+        print(np.shape(self.X.items()[0]))
+        print(np.shape(self.y.items()[0]))
+        self.dX, self.rX, self.cX = np.shape(self.X.items())
+        self.dy, self.ry, self.cy = np.shape(self.y.items())
         
         train_valid = self.data_split()
         

@@ -19,8 +19,8 @@ label = dataload(datadir="/root/Share/data/dataset/label", outdir="/root/Share/d
 # check    = display(mask)(numToShow=n, colormap='gray')
 nmz_octa = normalizing(octa)(fromMinusOne=False, opt="max") # opt="max" : /255. , opt="minmax"
 nmz_mask = normalizing(mask)(fromMinusOne=False, opt="max") # opt="max" : /255. , opt="minmax"
-check    = display((nmz_octa, label))(numToShow=n)
-check    = display((nmz_octa, label))(numToShow=n, opt='hist')
+# check    = display((nmz_octa, label))(numToShow=n)
+# check    = display((nmz_octa, label))(numToShow=n, opt='hist')
 
 # # This is for frangi filtered(from MATLAB) => CLAHE + OTSU (PYTHON)
 # img = cv2.imread(os.path.join("/root/Share/data/dataset/og","frangi_out.png"), cv2.IMREAD_GRAYSCALE)
@@ -28,5 +28,13 @@ check    = display((nmz_octa, label))(numToShow=n, opt='hist')
 
 # frangi_octa = filtering(nmz_octa)('frangi')
 # check    = display(frangi_octa)(numToShow=n, colormap='gray')print(label)
-predicted = train('vgg')((nmz_octa, label))
+
+img_label = {}
+for k in nmz_octa.keys():
+    img_label[k]=[nmz_octa[k]]
+    img_label[k].append(label[int(k)])
+
+print(img_label)
+
+predicted = train('vgg')(img_label)
 # check    = display(predicted)(numToShow=n, colormap='gray')
