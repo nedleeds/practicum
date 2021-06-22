@@ -3,10 +3,13 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from .metrics import metric
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 from .model_select           import model_select, compile_train
 from tensorflow.keras import metrics
+from tensorflow.keras.layers.experimental.preprocessing import TextVectorization as tv
+
 
 import matplotlib
 matplotlib.use('tkagg')
@@ -14,22 +17,32 @@ import matplotlib.pyplot as plt
 
 # from Models import unet, segnet
 class train():
-    def __init__(self,model_name='unet'):
+    def __init__(self,model_name='unet',kind='segmentation'):
         self.select = model_name
+        self.kind = kind
         self.model_parameter = {
             'unet'   : [(3,3), (1, 1), 'same', 'he_uniform', True, True], # [ k, kT, s, p, i, upsample, MUP]
-            'vgg'    : [6], # numbers of classes 
+            'vgg'    : 7, # numbers of classes 
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
     def __call__(self, imgs):
-        self.X = imgs.values()[0]    # self.X -> image dictionaries - subject num : [octa images]
-        self.y = imgs.values()[1]    # self.y -> label dictionaries - subject num : [disease labels]
-        
-        print(np.shape(self.X.items()[0]))
-        print(np.shape(self.y.items()[0]))
-        self.dX, self.rX, self.cX = np.shape(self.X.items())
-        self.dy, self.ry, self.cy = np.shape(self.y.items())
-        
+        if self.kind =='classification':
+            v = list(imgs.values())
+            self.X, self.y = [], []
+            for idx,(x, y) in enumerate(v) :
+                self.X.append(x)
+                self.y.append(y)
+            self.dX, self.rX, self.cX = np.shape(self.X)
+            self.ry, self.cy = np.shape(self.y)[0], 1
+        else : 
+            self.X = list(imgs[0].values())
+            self.y = list(imgs[1].values())
+            self.dX, self.rX, self.cX = np.shape(self.X)
+            self.dy, self.ry, self.cy = np.shape(self.y)
+        # self.X = x  # self.X -> image dictionaries - subject num : [octa images]
+        # self.y = y  # self.y -> label dictionaries - subject num : [disease labels]
+
+    
         train_valid = self.data_split()
         
         # model building
@@ -37,10 +50,10 @@ class train():
         # print("when call model_selece :", np.shape(self.train_X))
         selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select])
         selected_model.summary()
-        return
+        # return
         # 2. compile model
         # print("when call compile_train :", np.shape(self.train_X))
-        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=50, batch=8, learn_r=0.001,
+        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=500, batch=8, learn_r=0.001,
                                                                 metric=[metrics.MeanSquaredError(),metrics.AUC()])
         
         # model prediction
@@ -67,15 +80,38 @@ class train():
         return model_out
 
     def data_split(self):
-        X_train,     self.test_X, self.train_y, self.test_y = train_test_split(self.X, self.y, test_size=0.1, random_state=42)
-        self.train_X, self.val_X, self.train_y, self.val_y  = train_test_split(X_train, self.train_y, test_size=0.3, random_state=42)
+        X_train,     self.test_X, self.train_y, self.test_y = train_test_split(self.X, self.y, test_size=0.1, random_state=2)
+        self.train_X, self.val_X, self.train_y, self.val_y  = train_test_split(X_train, self.train_y, test_size=0.3, random_state=4)
 
-        self.train_X = tf.reshape(self.train_X, (-1, self.rX, self.cy, 1))
-        self.train_y = tf.reshape(self.train_y, (-1, self.rX, self.cy, 1))
-        self.val_X   = tf.reshape(self.val_X,   (-1, self.rX, self.cy, 1))
-        self.val_y   = tf.reshape(self.val_y,   (-1, self.rX, self.cy, 1))
-        self.test_X  = tf.reshape(self.test_X,  (-1, self.rX, self.cy, 1))
-        self.test_y  = tf.reshape(self.test_y,  (-1, self.rX, self.cy, 1))
+        self.train_X = tf.reshape(self.train_X, (-1, self.rX, self.cX, 1))
+        self.val_X   = tf.reshape(self.val_X,   (-1, self.rX, self.cX, 1))
+        self.test_X  = tf.reshape(self.test_X,  (-1, self.rX, self.cX, 1))
+
+        if self.kind =='segmentation':    
+            self.train_y = tf.reshape(self.train_y, (-1, self.rX, self.cX, 1))
+            self.val_y   = tf.reshape(self.val_y,   (-1, self.rX, self.cX, 1))
+            self.test_y  = tf.reshape(self.test_y,  (-1, self.rX, self.cX, 1))
+        else:
+            self.train_y = self.onehot_encoder(self.train_y)
+            self.val_y   = self.onehot_encoder(self.val_y)
+            self.test_y  = self.onehot_encoder(self.test_y)
+            
+            # print(self.train_y.toarray())
+            # print(self.test_y.toarray())
+            pass
 
         train_valid = [(self.train_X, self.train_y), (self.val_X, self.val_y)]
+
         return train_valid
+
+    def onehot_encoder(self, labels):        
+        encoder    = LabelEncoder()
+        encoder.fit(labels)
+        labels = encoder.transform(labels)
+        labels = labels.reshape(-1,1)
+
+        # oh_encoder = OneHotEncoder()
+        # oh_encoder.fit(labels)
+        # oh_labels = oh_encoder.transform(labels)
+        # oh_labels.toarray()
+        return labels

@@ -33,8 +33,8 @@ img_label = {}
 for k in nmz_octa.keys():
     img_label[k]=[nmz_octa[k]]
     img_label[k].append(label[int(k)])
-
 print(img_label)
 
-predicted = train('vgg')(img_label)
+# predicted = train('unet','segmentation')([nmz_octa, nmz_mask])
+predicted = train('vgg','classification')(img_label)
 # check    = display(predicted)(numToShow=n, colormap='gray')

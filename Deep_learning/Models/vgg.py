@@ -25,6 +25,7 @@ class vgg():
 
         input_shape = (input_row, input_col, input_chn)
         model = models.Sequential()
+        
         model.add(Input(shape=input_shape, name="gray_input"))
         model.add(layers.Conv2D(3, (3, 3), padding='same', activation='relu', name="rgb_input"))
         pre_trained_vgg = VGG16(weights='imagenet', include_top=False, input_shape=(input_row, input_col, 3))

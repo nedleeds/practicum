@@ -29,6 +29,7 @@ class compile_train():
     def __init__(self, selected_model, name, data):
         self.model_ = selected_model
         self.name   = name
+        
         self.train_X  = data[0][0]
         self.train_y  = data[0][1]
         self.val_X  = data[1][0]
@@ -92,7 +93,7 @@ class compile_train():
         # # l2 = tf.reduce_mean(tf.square(tf.sub(gt,predicted)))
         # # total_loss = l1*0.2 + l2*0.8
         # total_loss = l1
-        # total_loss = 'bce'
+        total_loss = 'sparse_categorical_crossentropy'
         return total_loss
 
 def contrastive_loss(y_true, y_pred):
