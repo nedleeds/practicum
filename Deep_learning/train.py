@@ -89,10 +89,8 @@ class train():
             self.val_y   = self.onehot_encoder(self.val_y)
             self.test_y  = self.onehot_encoder(self.test_y)
             
-            print(self.train_y.shape[1])
-            self.train_y = tf.reshape(self.train_y, (-1, self.train_y.shape[1]))
-            self.val_y   = tf.reshape(self.val_y,   (-1, self.val_y.shape[1]))
-            self.test_y  = tf.reshape(self.test_y,  (-1, self.test_y.shape[1]))
+            # print(self.train_y.shape[1])
+            
             # self.train_y = tf.reshape(self.train_y, (-1,1))
             # self.val_y   = tf.reshape(self.val_y,   (-1,1))
             # self.test_y  = tf.reshape(self.test_y,  (-1,1))
@@ -109,11 +107,13 @@ class train():
         encoder = LabelEncoder()
         encoder.fit(labels)
         labels = encoder.transform(labels)
-        labels = labels.reshape(-1,1)
-        oh_encoder = OneHotEncoder()
-        oh_encoder.fit(labels)
-        oh_labels = oh_encoder.transform(labels)
-        oh_labels.toarray()
+
+        oh_labels = tf.one_hot(labels, len(set(labels)))
+        # labels = labels.reshape(-1,1)
+        # oh_encoder = OneHotEncoder()
+        # oh_encoder.fit(labels)
+        # oh_labels = oh_encoder.transform(labels)
+        # oh_labels.toarray()
         return oh_labels
 
     def savePredictedImg(self,selected_m):
