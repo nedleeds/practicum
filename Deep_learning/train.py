@@ -9,7 +9,8 @@ from sklearn.preprocessing import OneHotEncoder
 from .model_select           import model_select, compile_train
 from tensorflow.keras import metrics
 from tensorflow.keras.layers.experimental.preprocessing import TextVectorization as tv
-
+from sklearn.metrics import roc_auc_score
+from scipy.sparse import csr_matrix
 
 import matplotlib
 matplotlib.use('tkagg')
@@ -22,21 +23,21 @@ class train():
         self.kind = kind
         self.model_parameter = {
             'unet'   : [(3,3), (1, 1), 'same', 'he_uniform', True, True], # [ k, kT, s, p, i, upsample, MUP]
-            'vgg'    : 7, # numbers of classes 
+            'vgg'    : 1, # numbers of classes 
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
     def __call__(self, imgs):
         if self.kind =='classification':
             v = list(imgs.values())
             self.X, self.y = [], []
-            for idx,(x, y) in enumerate(v) :
-                self.X.append(x)
-                self.y.append(y)
+            for idx,(label, image) in enumerate(v) :
+                self.X.append(image)
+                self.y.append(label)
             self.dX, self.rX, self.cX = np.shape(self.X)
             self.ry, self.cy = np.shape(self.y)[0], 1
         else : 
-            self.X = list(imgs[0].values())
-            self.y = list(imgs[1].values())
+            self.X = list(imgs[1].values())
+            self.y = list(imgs[0].values())
             self.dX, self.rX, self.cX = np.shape(self.X)
             self.dy, self.ry, self.cy = np.shape(self.y)
         # self.X = x  # self.X -> image dictionaries - subject num : [octa images]
@@ -48,27 +49,19 @@ class train():
         # model building
         # 1. select model
         # print("when call model_selece :", np.shape(self.train_X))
+        
         selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select])
         selected_model.summary()
         # return
         # 2. compile model
         # print("when call compile_train :", np.shape(self.train_X))
-        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=500, batch=8, learn_r=0.001,
-                                                                metric=[metrics.MeanSquaredError(),metrics.AUC()])
-        
-        # model prediction
-        model_out = []
-        
-        for i in range(len(self.test_X)):
-            predicted = selected_model.predict((np.expand_dims(self.test_X[i],0)))
-            model_out.append(np.reshape(predicted,(self.rX, self.cX)))
-            plt.close('all')
-            plt.subplots(1,3, figsize=(21,7))    
-            plt.subplot(131), plt.imshow(np.reshape(self.test_X[i],(self.rX, self.cX)), cmap='gray'), plt.title("enface")
-            plt.subplot(132), plt.imshow(predicted.reshape(self.rX, self.cX), cmap='gray'), plt.title("predicted")
-            plt.subplot(133), plt.imshow(self.test_y[i], cmap='gray'), plt.title("ground truth")
-            # # plt.show()
-            plt.savefig('/root/Share/data/result/predict/predict_'+str(i)+'.png')    
+        # compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=500, batch=8, learn_r=0.001,
+        #                                                         metric=[metrics.MeanSquaredError(),metrics.AUC()])
+        compile_train(selected_model, self.select, train_valid)(opt='adam', lss='mse', epoch=50, batch=8, learn_r=0.001,metric=[metrics.CategoricalCrossentropy()])
+        # model prediction    
+        if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
+        else : model_out = self.savePredictedClass(selected_model)
+            
 
         # # 가중치 로드
         # model.load_weights(checkpoint_path)
@@ -96,22 +89,48 @@ class train():
             self.val_y   = self.onehot_encoder(self.val_y)
             self.test_y  = self.onehot_encoder(self.test_y)
             
+            print(self.train_y.shape[1])
+            self.train_y = tf.reshape(self.train_y, (-1, self.train_y.shape[1]))
+            self.val_y   = tf.reshape(self.val_y,   (-1, self.val_y.shape[1]))
+            self.test_y  = tf.reshape(self.test_y,  (-1, self.test_y.shape[1]))
+            # self.train_y = tf.reshape(self.train_y, (-1,1))
+            # self.val_y   = tf.reshape(self.val_y,   (-1,1))
+            # self.test_y  = tf.reshape(self.test_y,  (-1,1))
+
             # print(self.train_y.toarray())
             # print(self.test_y.toarray())
-            pass
+            
 
         train_valid = [(self.train_X, self.train_y), (self.val_X, self.val_y)]
 
         return train_valid
 
     def onehot_encoder(self, labels):        
-        encoder    = LabelEncoder()
+        encoder = LabelEncoder()
         encoder.fit(labels)
         labels = encoder.transform(labels)
         labels = labels.reshape(-1,1)
+        oh_encoder = OneHotEncoder()
+        oh_encoder.fit(labels)
+        oh_labels = oh_encoder.transform(labels)
+        oh_labels.toarray()
+        return oh_labels
 
-        # oh_encoder = OneHotEncoder()
-        # oh_encoder.fit(labels)
-        # oh_labels = oh_encoder.transform(labels)
-        # oh_labels.toarray()
-        return labels
+    def savePredictedImg(self,selected_m):
+        for i in range(len(self.test_X)):
+            model_out = []
+            predicted = selected_m.predict((np.expand_dims(self.test_X[i],0)))
+            model_out.append(np.reshape(predicted,(self.rX, self.cX)))
+            plt.close('all')
+            plt.subplots(1,3, figsize=(21,7))    
+            plt.subplot(131), plt.imshow(np.reshape(self.test_X[i],(self.rX, self.cX)), cmap='gray'), plt.title("enface")
+            plt.subplot(132), plt.imshow(predicted.reshape(self.rX, self.cX), cmap='gray'), plt.title("predicted")
+            plt.subplot(133), plt.imshow(self.test_y[i], cmap='gray'), plt.title("ground truth")
+            # # plt.show()
+            plt.savefig('/root/Share/data/result/predict/predict_'+str(i)+'.png')
+            return model_out
+    
+    def savePredictedClass(self,selected_m):
+        predicted = selected_m.predict(self.test_X)
+        
+        print(predicted, self.test_y)

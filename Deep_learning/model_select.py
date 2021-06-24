@@ -51,7 +51,7 @@ class compile_train():
                         epochs=epoch, 
                         verbose=2,
                         callbacks=self.get_callbacks(),
-                        validation_data=[self.val_X, self.val_y],
+                        validation_data=(self.val_X, self.val_y),
                         ) 
         
         return self.model_
