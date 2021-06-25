@@ -54,7 +54,7 @@ class train():
         # print("when call compile_train :", np.shape(self.train_X))
         # compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=500, batch=8, learn_r=0.001,
         #                                                         metric=[metrics.MeanSquaredError(),metrics.AUC()])
-        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=50, batch=8, learn_r=0.001)
+        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=50, batch=8, learn_r=0.01)
         # model prediction    
         if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
         else : model_out = self.savePredictedClass(selected_model)
@@ -71,7 +71,7 @@ class train():
 
     def data_split(self):
         X_train,     self.test_X, self.train_y, self.test_y = train_test_split(self.X, self.y, test_size=0.1, random_state=2)
-        self.train_X, self.val_X, self.train_y, self.val_y  = train_test_split(X_train, self.train_y, test_size=0.3, random_state=4)
+        self.train_X, self.val_X, self.train_y, self.val_y  = train_test_split(X_train, self.train_y, test_size=0.1, random_state=4)
 
         self.train_X = tf.reshape(self.train_X, (-1, self.rX, self.cX, 1))
         self.val_X   = tf.reshape(self.val_X,   (-1, self.rX, self.cX, 1))
@@ -118,10 +118,15 @@ class train():
     
     def savePredictedClass(self,selected_m):
         predicted = selected_m.predict(self.test_X)
+        correct = 0
+        wrong = 0
         for idx, val in enumerate(predicted):
             if np.argmax(val)==1: pre="NORMAL"
             else: pre="DR"
             if np.argmax(self.test_y.numpy()[idx])==1: tst="NORMAL"
             else: tst="DR"
             print(f"pre/test:{pre}/{tst}")
-        # print(predicted, self.test_y)
+            if pre==tst : correct+=1
+            else : wrong +=1
+        
+        print(f"wrong / correct : {wrong} / {correct}")
