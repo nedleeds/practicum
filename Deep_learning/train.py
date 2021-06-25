@@ -128,5 +128,5 @@ class train():
             print(f"pre/test:{pre}/{tst}")
             if pre==tst : correct+=1
             else : wrong +=1
-        
         print(f"wrong / correct : {wrong} / {correct}")
+        print(f"correct percentage : {round(correct/(wrong+correct),2)*100}%")
