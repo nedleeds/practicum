@@ -6,11 +6,8 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
-from .model_select           import model_select, compile_train
+from .model_select import model_select, compile_train
 from tensorflow.keras import metrics
-from tensorflow.keras.layers.experimental.preprocessing import TextVectorization as tv
-from sklearn.metrics import roc_auc_score
-from scipy.sparse import csr_matrix
 
 import matplotlib
 matplotlib.use('tkagg')
@@ -23,7 +20,7 @@ class train():
         self.kind = kind
         self.model_parameter = {
             'unet'   : [(3,3), (1, 1), 'same', 'he_uniform', True, True], # [ k, kT, s, p, i, upsample, MUP]
-            'vgg'    : 1, # numbers of classes 
+            'vgg'    : 2, # numbers of classes 
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
     def __call__(self, imgs):
@@ -57,7 +54,7 @@ class train():
         # print("when call compile_train :", np.shape(self.train_X))
         # compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=500, batch=8, learn_r=0.001,
         #                                                         metric=[metrics.MeanSquaredError(),metrics.AUC()])
-        compile_train(selected_model, self.select, train_valid)(opt='adam', lss='mse', epoch=50, batch=8, learn_r=0.001,metric=[metrics.CategoricalCrossentropy()])
+        compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=50, batch=8, learn_r=0.001)
         # model prediction    
         if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
         else : model_out = self.savePredictedClass(selected_model)
@@ -87,17 +84,7 @@ class train():
         else:
             self.train_y = self.onehot_encoder(self.train_y)
             self.val_y   = self.onehot_encoder(self.val_y)
-            self.test_y  = self.onehot_encoder(self.test_y)
-            
-            # print(self.train_y.shape[1])
-            
-            # self.train_y = tf.reshape(self.train_y, (-1,1))
-            # self.val_y   = tf.reshape(self.val_y,   (-1,1))
-            # self.test_y  = tf.reshape(self.test_y,  (-1,1))
-
-            # print(self.train_y.toarray())
-            # print(self.test_y.toarray())
-            
+            self.test_y  = self.onehot_encoder(self.test_y)            
 
         train_valid = [(self.train_X, self.train_y), (self.val_X, self.val_y)]
 
@@ -106,9 +93,8 @@ class train():
     def onehot_encoder(self, labels):        
         encoder = LabelEncoder()
         encoder.fit(labels)
-        labels = encoder.transform(labels)
-
-        oh_labels = tf.one_hot(labels, len(set(labels)))
+        labels2 = encoder.transform(labels)
+        oh_labels = tf.one_hot(labels2, len(set(labels)))
         # labels = labels.reshape(-1,1)
         # oh_encoder = OneHotEncoder()
         # oh_encoder.fit(labels)
@@ -132,5 +118,10 @@ class train():
     
     def savePredictedClass(self,selected_m):
         predicted = selected_m.predict(self.test_X)
-        
-        print(predicted, self.test_y)
+        for idx, val in enumerate(predicted):
+            if np.argmax(val)==1: pre="NORMAL"
+            else: pre="DR"
+            if np.argmax(self.test_y.numpy()[idx])==1: tst="NORMAL"
+            else: tst="DR"
+            print(f"pre/test:{pre}/{tst}")
+        # print(predicted, self.test_y)

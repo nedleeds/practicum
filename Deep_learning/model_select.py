@@ -88,12 +88,12 @@ class compile_train():
         
         return model_callbacks
 
-    def myloss(self, input_octa, predicted):
-        # l1 = ContrastiveLoss(margin=1)(input_octa, predicted)
-        # # l2 = tf.reduce_mean(tf.square(tf.sub(gt,predicted)))
-        # # total_loss = l1*0.2 + l2*0.8
-        # total_loss = l1
-        total_loss = 'sparse_categorical_crossentropy'
+    def myloss(self, y, y_hat):
+        loss1 = tf.keras.losses.BinaryCrossentropy(from_logits=False)
+        loss2 = tf.keras.losses.CategoricalHinge()
+        loss3 = tf.keras.losses.CosineSimilarity() # nope.
+        loss4 = tf.keras.losses.CategoricalCrossentropy() # for disease classification
+        total_loss = loss4
         return total_loss
 
 def contrastive_loss(y_true, y_pred):
@@ -118,5 +118,3 @@ class ContrastiveLoss(Loss):
         square_pred   = K.square(y_pred)
         margin_square = K.square(K.maximum(self.margin - y_pred, 0))
         return K.mean(y_true * square_pred + (1 - y_true) * margin_square)
-
-
