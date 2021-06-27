@@ -35,9 +35,9 @@ class compile_train():
         self.val_X  = data[1][0]
         self.val_y  = data[1][1]
 
-    def __call__(self, opt='Adam', lss='mse', metric=False, epoch=1000, batch=8, learn_r=0.0001):
+    def __call__(self, opt='Adam', lss='mse', epoch=1000, batch=8, learn_r=0.0001):
         self.optimizer   = opt  
-        self.metric      = metric
+        self.metric      = [tf.keras.metrics.Precision(),tf.keras.metrics.Recall()]
         self.loss        = self.myloss(self.train_X, self.train_y)
 
         if self.metric :    

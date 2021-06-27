@@ -32,9 +32,12 @@ class vgg():
         pre_trained_vgg.trainable = True
         model.add(pre_trained_vgg)
         model.add(layers.Flatten())
-        model.add(layers.Dense(4096, activation='relu'))
-        model.add(layers.Dense(2048, activation='relu'))
-        model.add(layers.Dense(1024, activation='relu'))
+        model.add(layers.Dense(4096, activation='relu', kernel_regularizer=regularizers.l2(0.0001)))
+        model.add(layers.Dropout(0.5))
+        model.add(layers.Dense(2048, activation='relu', kernel_regularizer=regularizers.l2(0.0001)))
+        model.add(layers.Dropout(0.3))
+        model.add(layers.Dense(1024, activation='relu', kernel_regularizer=regularizers.l2(0.0001)))
+        model.add(layers.Dropout(0.1))
         model.add(layers.Dense(self.classnum, activation='softmax'))
         
         return model

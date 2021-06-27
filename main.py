@@ -32,10 +32,12 @@ nmz_mask = normalizing(mask)(fromMinusOne=False, opt="max") # opt="max" : /255. 
 img_label = {}
 dr_dataset = {}
 nc_dataset = {}
+
 for k in nmz_octa.keys():
     if label[int(k)]=="DR" or label[int(k)]=="NORMAL":
         img_label[k]=[label[int(k)]]
         img_label[k].append(nmz_octa[k])
+
 print(img_label)
 
 # predicted = train('unet','segmentation')([nmz_octa, nmz_mask])
