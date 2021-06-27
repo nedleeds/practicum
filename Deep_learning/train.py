@@ -54,7 +54,7 @@ class train():
         # print("when call compile_train :", np.shape(self.train_X))
         # compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=500, batch=8, learn_r=0.001,
         #                                                         metric=[metrics.MeanSquaredError(),metrics.AUC()])
-        compile_train(selected_model, self.select, train_valid)(opt='sgd', epoch=100, batch=8, learn_r=0.01)
+        compile_train(selected_model, self.select, train_valid)(opt='sgd', epoch=500, batch=8, learn_r=0.01)
         # model prediction    
         if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
         else : model_out = self.savePredictedClass(selected_model)
