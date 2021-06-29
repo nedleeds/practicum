@@ -1,3 +1,4 @@
+from genericpath import isfile
 import os
 import cv2
 import numpy as np
@@ -6,7 +7,7 @@ import glob
 import matplotlib.pyplot as plt
 import pandas as pd
 
-class dataload():
+class dataLoad():
     def __init__(self, datadir, outdir):
         self.crops = []
         self.octa = {}
@@ -36,4 +37,72 @@ class dataload():
             for i, d in zip(id_num.astype(int), disease):
                 label[i] = d
             return label
-        
+    
+class dataCategorize():
+    def __init__(self) -> None:
+        pass
+    def __call__(self, label, nmz_octa):
+        basepath = "/root/Share/data/dataset/disease"
+        ogpath = "/root/Share/data/dataset/og"
+        drpath = os.path.join(basepath, "DR")
+        ncpath = os.path.join(basepath, "NORMAL")
+        ampath = os.path.join(basepath, "AMD")
+        cnpath = os.path.join(basepath, "CNV")
+        cspath = os.path.join(basepath, "CSC")
+        rvpath = os.path.join(basepath, "RVO")
+        otpath = os.path.join(basepath, "OTHERS")
+
+        no, am, dr, cn, cs, rv, ot = {},{},{},{},{},{},{}
+
+        for i in nmz_octa.keys():
+            k = label[int(i)]
+            v = cv2.imread(os.path.join(ogpath, str(i)+".bmp"), cv2.IMREAD_GRAYSCALE)
+            if k=="DR":
+                if os.path.isfile(os.path.join(drpath, i+"_DR.png")) : pass
+                else : cv2.imwrite(os.path.join(drpath, i+"_DR.png"), v)
+                dr[i]=[k]
+                dr[i].append(nmz_octa[i])
+            elif k=="NORMAL":
+                if os.path.isfile(os.path.join(ncpath, i+"_NORMAL.png")) : pass
+                else : cv2.imwrite(os.path.join(ncpath, i+"_NORMAL.png"), v)
+                no[i]=[k]
+                no[i].append(nmz_octa[i])
+            elif k=="AMD":
+                if os.path.isfile(os.path.join(ampath, i+"_AMD.png")) : pass
+                else : cv2.imwrite(os.path.join(ampath, i+"_AMD.png"), v)
+                am[i]=[k]
+                am[i].append(nmz_octa[i])
+            elif k=="CSC":
+                if os.path.isfile(os.path.join(cspath, i+"_CSC.png")) : pass
+                else : cv2.imwrite(os.path.join(cspath, i+"_CSC.png"), v)
+                cs[i]=[k]
+                cs[i].append(nmz_octa[i])
+            elif k=="CNV":
+                if os.path.isfile(os.path.join(cnpath, i+"_CNV.png")) : pass
+                else : cv2.imwrite(os.path.join(cnpath, i+"_CNV.png"), v)
+                cn[i]=[k]
+                cn[i].append(nmz_octa[i])
+            elif k=="RVO":
+                if os.path.isfile(os.path.join(rvpath, i+"_RVO.png")) : pass
+                else : cv2.imwrite(os.path.join(rvpath, i+"_RVO.png"), v)
+                rv[i]=[k]
+                rv[i].append(nmz_octa[i])
+            elif k=="OTHERS":
+                if os.path.isfile(os.path.join(otpath, i+"_OTHERS.png")) : pass
+                else : cv2.imwrite(os.path.join(otpath, i+"_OTHERS.png"), v)
+                ot[i]=[k]
+                ot[i].append(nmz_octa[i])
+            else: pass
+        return no, am, dr, cn, cs, rv, ot
+    
+class dataMerge():
+    def __init__(self) -> None:
+        pass
+    def __call__(self, *args, **kwds):
+        dataset = {}
+        n = len(args)
+        for i in range(n):
+            for k in args[i]:
+                dataset[k] = args[i][k]
+        dataset = sorted(dataset.items(), key=lambda x : x[0])
+        return dict(dataset), n

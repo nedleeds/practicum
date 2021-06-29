@@ -15,12 +15,12 @@ import matplotlib.pyplot as plt
 
 # from Models import unet, segnet
 class train():
-    def __init__(self,model_name='unet',kind='segmentation'):
+    def __init__(self, model_name='unet',kind='segmentation', class_num=2):
         self.select = model_name
         self.kind = kind
         self.model_parameter = {
             'unet'   : [(3,3), (1, 1), 'same', 'he_uniform', True, True], # [ k, kT, s, p, i, upsample, MUP]
-            'vgg'    : 2, # numbers of classes 
+            'vgg'    : class_num, # numbers of classes 
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
     def __call__(self, imgs):
@@ -44,18 +44,14 @@ class train():
         train_valid = self.data_split()
         
         # model building
-        # 1. select model
-        # print("when call model_selece :", np.shape(self.train_X))
-        
+        # 1. select model      
         selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select])
         selected_model.summary()
-        # return
+        
         # 2. compile model
-        # print("when call compile_train :", np.shape(self.train_X))
-        # compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=500, batch=8, learn_r=0.001,
-        #                                                         metric=[metrics.MeanSquaredError(),metrics.AUC()])
         compile_train(selected_model, self.select, train_valid)(opt='sgd', epoch=100, batch=8, learn_r=0.01)
-        # model prediction    
+        
+        # 3. model prediction    
         if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
         else : model_out = self.savePredictedClass(selected_model)
 
@@ -76,11 +72,11 @@ class train():
         self.val_X   = tf.reshape(self.val_X,   (-1, self.rX, self.cX, 1))
         self.test_X  = tf.reshape(self.test_X,  (-1, self.rX, self.cX, 1))
 
-        if self.kind =='segmentation':    
+        if self.kind =='segmentation':    # image reshaping
             self.train_y = tf.reshape(self.train_y, (-1, self.rX, self.cX, 1))
             self.val_y   = tf.reshape(self.val_y,   (-1, self.rX, self.cX, 1))
             self.test_y  = tf.reshape(self.test_y,  (-1, self.rX, self.cX, 1))
-        else:
+        else: # labeling --> need to onehot encoding
             self.train_y = self.onehot_encoder(self.train_y)
             self.val_y   = self.onehot_encoder(self.val_y)
             self.test_y  = self.onehot_encoder(self.test_y)            
@@ -124,3 +120,4 @@ class train():
             else : wrong +=1
         print(f"wrong / correct : {wrong} / {correct}")
         print(f"correct percentage : {round(correct/(wrong+correct),2)*100}%")
+        pass

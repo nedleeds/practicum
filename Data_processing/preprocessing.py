@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .dataset import dataload
+from .dataset import dataLoad
 
 class normalizing():
     def __init__(self, images):
