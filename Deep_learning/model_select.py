@@ -14,11 +14,11 @@ class model_select(object):
     def __init__(self, select='unet'):
         self.select = select
 
-    def __call__(self, input_images, params):
+    def __call__(self, input_images, params, drop_seed):
         if self.select.lower()=='unet':
             model = unet(params)(input_images)
         elif self.select.lower()=='vgg':
-            model = vgg(params)(input_images)
+            model = vgg(params)(input_images, drop_seed)
         # elif self.select.lower()=='vae':
         #     model = vae(params)(input_images)
         else : pass
@@ -35,7 +35,7 @@ class compile_train():
         self.val_X  = data[1][0]
         self.val_y  = data[1][1]
 
-    def __call__(self, opt='Adam', lss='mse', epoch=1000, batch=8, learn_r=0.0001):
+    def __call__(self, opt='Adam', lss='mse', epoch=1000, batch=8, learn_r=0.001):
         self.optimizer   = opt  
         self.metric      = [tf.keras.metrics.Precision(),tf.keras.metrics.Recall()]
         self.loss        = self.myloss(self.train_X, self.train_y)

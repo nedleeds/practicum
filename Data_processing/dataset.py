@@ -55,54 +55,63 @@ class dataCategorize():
         no, am, dr, cn, cs, rv, ot = {},{},{},{},{},{},{}
 
         for i in nmz_octa.keys():
-            k = label[int(i)]
-            v = cv2.imread(os.path.join(ogpath, str(i)+".bmp"), cv2.IMREAD_GRAYSCALE)
-            if k=="DR":
-                if os.path.isfile(os.path.join(drpath, i+"_DR.png")) : pass
-                else : cv2.imwrite(os.path.join(drpath, i+"_DR.png"), v)
-                dr[i]=[k]
-                dr[i].append(nmz_octa[i])
-            elif k=="NORMAL":
-                if os.path.isfile(os.path.join(ncpath, i+"_NORMAL.png")) : pass
-                else : cv2.imwrite(os.path.join(ncpath, i+"_NORMAL.png"), v)
-                no[i]=[k]
-                no[i].append(nmz_octa[i])
-            elif k=="AMD":
-                if os.path.isfile(os.path.join(ampath, i+"_AMD.png")) : pass
-                else : cv2.imwrite(os.path.join(ampath, i+"_AMD.png"), v)
-                am[i]=[k]
-                am[i].append(nmz_octa[i])
-            elif k=="CSC":
-                if os.path.isfile(os.path.join(cspath, i+"_CSC.png")) : pass
-                else : cv2.imwrite(os.path.join(cspath, i+"_CSC.png"), v)
-                cs[i]=[k]
-                cs[i].append(nmz_octa[i])
-            elif k=="CNV":
-                if os.path.isfile(os.path.join(cnpath, i+"_CNV.png")) : pass
-                else : cv2.imwrite(os.path.join(cnpath, i+"_CNV.png"), v)
-                cn[i]=[k]
-                cn[i].append(nmz_octa[i])
-            elif k=="RVO":
-                if os.path.isfile(os.path.join(rvpath, i+"_RVO.png")) : pass
-                else : cv2.imwrite(os.path.join(rvpath, i+"_RVO.png"), v)
-                rv[i]=[k]
-                rv[i].append(nmz_octa[i])
-            elif k=="OTHERS":
-                if os.path.isfile(os.path.join(otpath, i+"_OTHERS.png")) : pass
-                else : cv2.imwrite(os.path.join(otpath, i+"_OTHERS.png"), v)
-                ot[i]=[k]
-                ot[i].append(nmz_octa[i])
-            else: pass
+            skipNM = ["10009", "10016", "10034", "10037", "10039", "10042", "10044", "10061", "10082", "10124", "10153", "10156", "10185", "10191", "10213", "10214", "10232", "10234",
+                      "10252", "10273", "10283"]
+            skipDR = ["10032", "10050", "10068", "10152", "10181"]
+            if i not in skipDR and skipNM:
+                k = label[int(i)]
+                v = cv2.imread(os.path.join(ogpath, str(i)+".bmp"), cv2.IMREAD_GRAYSCALE)
+                if k=="DR":
+                    if os.path.isfile(os.path.join(drpath, i+"_DR.png")) : pass
+                    else : cv2.imwrite(os.path.join(drpath, i+"_DR.png"), v)
+                    dr[i]=[k]
+                    dr[i].append(nmz_octa[i])
+                elif k=="NORMAL":
+                    if os.path.isfile(os.path.join(ncpath, i+"_NORMAL.png")) : pass
+                    else : cv2.imwrite(os.path.join(ncpath, i+"_NORMAL.png"), v)
+                    no[i]=[k]
+                    no[i].append(nmz_octa[i])
+                elif k=="AMD":
+                    if os.path.isfile(os.path.join(ampath, i+"_AMD.png")) : pass
+                    else : cv2.imwrite(os.path.join(ampath, i+"_AMD.png"), v)
+                    am[i]=[k]
+                    am[i].append(nmz_octa[i])
+                elif k=="CSC":
+                    if os.path.isfile(os.path.join(cspath, i+"_CSC.png")) : pass
+                    else : cv2.imwrite(os.path.join(cspath, i+"_CSC.png"), v)
+                    cs[i]=[k]
+                    cs[i].append(nmz_octa[i])
+                elif k=="CNV":
+                    if os.path.isfile(os.path.join(cnpath, i+"_CNV.png")) : pass
+                    else : cv2.imwrite(os.path.join(cnpath, i+"_CNV.png"), v)
+                    cn[i]=[k]
+                    cn[i].append(nmz_octa[i])
+                elif k=="RVO":
+                    if os.path.isfile(os.path.join(rvpath, i+"_RVO.png")) : pass
+                    else : cv2.imwrite(os.path.join(rvpath, i+"_RVO.png"), v)
+                    rv[i]=[k]
+                    rv[i].append(nmz_octa[i])
+                elif k=="OTHERS":
+                    if os.path.isfile(os.path.join(otpath, i+"_OTHERS.png")) : pass
+                    else : cv2.imwrite(os.path.join(otpath, i+"_OTHERS.png"), v)
+                    ot[i]=[k]
+                    ot[i].append(nmz_octa[i])
+                else: pass
         return no, am, dr, cn, cs, rv, ot
     
 class dataMerge():
     def __init__(self) -> None:
         pass
-    def __call__(self, *args, **kwds):
-        dataset = {}
+    def __call__(self, *args):
+        dataset, dataset2 = {}, {}
         n = len(args)
+        class_num = [len(args[x]) for x in range(len(args))]
         for i in range(n):
-            for k in args[i]:
-                dataset[k] = args[i][k]
-        dataset = sorted(dataset.items(), key=lambda x : x[0])
+            for cnt, k in enumerate(args[i]):
+                if cnt<class_num[i]//2:
+                    dataset[k] = args[i][k]
+                else :
+                    dataset2[k] = args[i][k]
+        dataset.update(dataset2)
+        # dataset = sorted(dataset.items(), key=lambda x : x[0])
         return dict(dataset), n

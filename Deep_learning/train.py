@@ -23,11 +23,15 @@ class train():
             'vgg'    : class_num, # numbers of classes 
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
-    def __call__(self, imgs):
+    def __call__(self, imgs): # imgs -> image, label split. 
         if self.kind =='classification':
-            v = list(imgs.values())
+            # class_num = [len(args[x]) for x in range(len(args))]
+            # for i in range(len(args)):
+            #     for label, image in list(*args.values()):
+            #         self.X.append(image)
+            #         self.y.append(label)
             self.X, self.y = [], []
-            for idx,(label, image) in enumerate(v) :
+            for label, image in list(imgs.values()) :
                 self.X.append(image)
                 self.y.append(label)
             self.dX, self.rX, self.cX = np.shape(self.X)
@@ -37,23 +41,33 @@ class train():
             self.y = list(imgs[0].values())
             self.dX, self.rX, self.cX = np.shape(self.X)
             self.dy, self.ry, self.cy = np.shape(self.y)
-        # self.X = x  # self.X -> image dictionaries - subject num : [octa images]
-        # self.y = y  # self.y -> label dictionaries - subject num : [disease labels]
-
     
         train_valid = self.data_split()
         
         # model building
-        # 1. select model      
-        selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select])
-        selected_model.summary()
         
+        # seeds = [x for x in range(1,42)]
+        # for s in seeds :  
+
+        # 1. select model    
+        s = 1
+        selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select], s)
+        selected_model.summary()
+
         # 2. compile model
         compile_train(selected_model, self.select, train_valid)(opt='sgd', epoch=100, batch=8, learn_r=0.01)
         
         # 3. model prediction    
         if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
         else : model_out = self.savePredictedClass(selected_model)
+
+            # with open('seed_acc.txt', 'a') as f:
+            #     f.write(f"seed : {s}, acc:{model_out}\n")
+
+            # if model_out > 87.0:
+            #     print(f"seed : {s}, acc:{model_out}")
+        
+            
 
         # # 가중치 로드
         # model.load_weights(checkpoint_path)
@@ -105,7 +119,7 @@ class train():
             # # plt.show()
             plt.savefig('/root/Share/data/result/predict/predict_'+str(i)+'.png')
             return model_out
-    
+
     def savePredictedClass(self,selected_m):
         predicted = selected_m.predict(self.test_X)
         correct = 0
@@ -120,4 +134,5 @@ class train():
             else : wrong +=1
         print(f"wrong / correct : {wrong} / {correct}")
         print(f"correct percentage : {round(correct/(wrong+correct),2)*100}%")
-        pass
+        acc = round(correct/(wrong+correct),2)*100
+        return acc

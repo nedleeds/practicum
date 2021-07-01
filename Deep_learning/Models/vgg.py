@@ -17,7 +17,7 @@ class vgg():
     def __init__(self,classnum=6):
         self.classnum=classnum
 
-    def __call__(self, input_imgs):
+    def __call__(self, input_imgs, drop_seed):
         self.inputs = input_imgs
         input_chn = np.shape(self.inputs)[-1] # 1 for gray scale, 3 for RGB
         input_row = np.shape(self.inputs)[1]
@@ -33,11 +33,9 @@ class vgg():
         model.add(pre_trained_vgg)
         model.add(layers.Flatten())
         model.add(layers.Dense(4096, activation='relu'))
-        # model.add(layers.Dropout(0.5))
-        model.add(layers.Dense(2048, activation='relu'))
+        # model.add(layers.Dropout(0.2, seed=drop_seed))
+        model.add(layers.Dense(4096, activation='relu'))
         # model.add(layers.Dropout(0.3))
-        model.add(layers.Dense(1024, activation='relu', kernel_regularizer=regularizers.l2(1e-5)))
-        # model.add(layers.Dropout(0.1))
         model.add(layers.Dense(self.classnum, activation='softmax'))
         
         return model
