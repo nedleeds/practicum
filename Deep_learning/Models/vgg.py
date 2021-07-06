@@ -29,7 +29,7 @@ class vgg():
         model.add(Input(shape=input_shape, name="gray_input"))
         model.add(layers.Conv2D(3, (1, 1), padding='same', activation='relu', name="rgb_input"))
         pre_trained_vgg = VGG16(weights='imagenet', include_top=False, input_shape=(input_row, input_col, 3))
-        pre_trained_vgg.trainable = True
+        pre_trained_vgg.trainable = False
         model.add(pre_trained_vgg)
         model.add(layers.Flatten())
         model.add(layers.Dense(4096, activation='relu'))

@@ -30,12 +30,14 @@ class compile_train():
         self.model_ = selected_model
         self.name   = name
         
-        self.train_X  = data[0][0]
-        self.train_y  = data[0][1]
-        self.val_X  = data[1][0]
-        self.val_y  = data[1][1]
+        self.train_X  = data[0]
+        self.train_y  = data[1]
+        # self.train_X  = data[0][0]
+        # self.train_y  = data[0][1]
+        # self.val_X  = data[1][0]
+        # self.val_y  = data[1][1]
 
-    def __call__(self, opt='Adam', lss='mse', epoch=1000, batch=8, learn_r=0.001):
+    def __call__(self, opt='Adam', lss='mse', epoch=100, batch=8, learn_r=0.001):
         self.optimizer   = opt  
         self.metric      = [tf.keras.metrics.Precision(),tf.keras.metrics.Recall()]
         self.loss        = self.myloss(self.train_X, self.train_y)
@@ -49,9 +51,9 @@ class compile_train():
         self.model_.fit(self.train_X, self.train_y,
                         batch_size=batch,
                         epochs=epoch, 
-                        verbose=2,
-                        callbacks=self.get_callbacks(),
-                        validation_data=(self.val_X, self.val_y),
+                        verbose=2
+                        # callbacks=self.get_callbacks()
+                        # validation_data=(self.val_X, self.val_y),
                         ) 
         
         return self.model_
@@ -89,32 +91,9 @@ class compile_train():
         return model_callbacks
 
     def myloss(self, y, y_hat):
-        loss1 = tf.keras.losses.BinaryCrossentropy(from_logits=False)
-        loss2 = tf.keras.losses.CategoricalHinge()
-        loss3 = tf.keras.losses.CosineSimilarity() # nope.
+        # loss1 = tf.keras.losses.BinaryCrossentropy(from_logits=False)
+        # loss2 = tf.keras.losses.CategoricalHinge()
+        # loss3 = tf.keras.losses.CosineSimilarity() # nope.
         loss4 = tf.keras.losses.CategoricalCrossentropy() # for disease classification
         total_loss = loss4
         return total_loss
-
-def contrastive_loss(y_true, y_pred):
-    margin = 1
-    square_pred = K.square(y_pred)
-    margin_square = K.square(K.maximum(margin - y_pred, 0))
-    return K.mean(y_true * square_pred + (1 - y_true) * margin_square)
-
-def contrastive_loss_with_margin(margin):
-    def contrastive_loss(y_true, y_pred):
-        square_pred = K.square(y_pred)
-        margin_square = K.square(K.maximum(margin - y_pred, 0))
-        return K.mean(y_true * square_pred + (1 - y_true) * margin_square)
-    return contrastive_loss
-
-class ContrastiveLoss(Loss):
-    def __init__(self, margin=1):
-        super().__init__()
-        self.margin = margin
-        
-    def call(self, y_true, y_pred):
-        square_pred   = K.square(y_pred)
-        margin_square = K.square(K.maximum(self.margin - y_pred, 0))
-        return K.mean(y_true * square_pred + (1 - y_true) * margin_square)

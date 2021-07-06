@@ -4,6 +4,7 @@ from .dataset import dataLoad
 
 class normalizing():
     def __init__(self, images):
+        self.renaming()
         self.images = images
         self.len = len(self.images)
         self.row = np.shape(self.images['10001'])[0]
@@ -32,3 +33,13 @@ class normalizing():
                 return
         
         return self.processed
+    
+    def renaming(self):
+        import os 
+        file_dir = "/root/Share/data/dataset/og"
+        file_names = os.listdir(file_dir)
+        for f in file_names:
+            src = os.path.join(file_dir, f)
+            dst = f.split('.')[0] + '.png'
+            dst = os.path.join(file_dir, dst)
+            os.rename(src, dst)

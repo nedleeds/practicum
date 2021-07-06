@@ -23,49 +23,36 @@ class train():
             'vgg'    : class_num, # numbers of classes 
             'vae'    : [3, 2, 'same'] # [k, s, p]
         }
+        self.X, self.y = [],[]
+
     def __call__(self, imgs): # imgs -> image, label split. 
-        if self.kind =='classification':
-            # class_num = [len(args[x]) for x in range(len(args))]
-            # for i in range(len(args)):
-            #     for label, image in list(*args.values()):
-            #         self.X.append(image)
-            #         self.y.append(label)
-            self.X, self.y = [], []
-            for label, image in list(imgs.values()) :
-                self.X.append(image)
-                self.y.append(label)
-            self.dX, self.rX, self.cX = np.shape(self.X)
-            self.ry, self.cy = np.shape(self.y)[0], 1
-        else : 
-            self.X = list(imgs[1].values())
-            self.y = list(imgs[0].values())
-            self.dX, self.rX, self.cX = np.shape(self.X)
-            self.dy, self.ry, self.cy = np.shape(self.y)
     
-        train_valid = self.data_split()
         
+
         # model building
         
-        # seeds = [x for x in range(1,42)]
-        # for s in seeds :  
+        seeds = [x for x in range(1,42)]
+        for s in seeds :  
+            # 1. select model    
+            # s = 1
+            train_valid = self.data_split(imgs, s)
+            selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select], 1)
+            selected_model.summary()
 
-        # 1. select model    
-        s = 1
-        selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select], s)
-        selected_model.summary()
+            # 2. compile model
+            compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=400, batch=8, learn_r=0.001)
+            
+            # 3. model prediction    
+            if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
+            else : model_out = self.savePredictedClass(selected_model)
 
-        # 2. compile model
-        compile_train(selected_model, self.select, train_valid)(opt='sgd', epoch=100, batch=8, learn_r=0.01)
         
-        # 3. model prediction    
-        if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
-        else : model_out = self.savePredictedClass(selected_model)
+            with open('seed_acc.txt', 'a') as f:
+                f.write(f"seed : {s}, acc:{model_out}\n")
 
-            # with open('seed_acc.txt', 'a') as f:
-            #     f.write(f"seed : {s}, acc:{model_out}\n")
-
-            # if model_out > 87.0:
-            #     print(f"seed : {s}, acc:{model_out}")
+            if model_out > 87.0:
+                print(f"seed : {s}, acc:{model_out}")
+                # return
         
             
 
@@ -78,25 +65,43 @@ class train():
 
         return model_out
 
-    def data_split(self):
-        X_train,     self.test_X, self.train_y, self.test_y = train_test_split(self.X, self.y, test_size=0.1, random_state=2)
-        self.train_X, self.val_X, self.train_y, self.val_y  = train_test_split(X_train, self.train_y, test_size=0.15, random_state=4)
+    def data_split(self, imgs, seed):
+        if self.kind =='classification':
+            # class_num = [len(args[x]) for x in range(len(args))]
+            # for i in range(len(args)):
+            #     for label, image in list(*args.values()):
+            #         self.X.append(image)
+            #         self.y.append(label)
+            for label, image in list(imgs.values()) :
+                self.X.append(image)
+                self.y.append(label)
+            self.dX, self.rX, self.cX = np.shape(self.X)
+            self.ry, self.cy = np.shape(self.y)[0], 1
+        else : 
+            self.X = list(imgs[1].values())
+            self.y = list(imgs[0].values())
+            self.dX, self.rX, self.cX = np.shape(self.X)
+            self.dy, self.ry, self.cy = np.shape(self.y)
+
+        self.train_X, self.test_X, self.train_y, self.test_y  = train_test_split(self.X, self.y, test_size=0.2, random_state=seed)
+        # X_train,     self.test_X, self.train_y, self.test_y = train_test_split(self.X, self.y, test_size=0.1, random_state=2)
+        # self.train_X, self.val_X, self.train_y, self.val_y  = train_test_split(X_train, self.train_y, test_size=0.15, random_state=4)
 
         self.train_X = tf.reshape(self.train_X, (-1, self.rX, self.cX, 1))
-        self.val_X   = tf.reshape(self.val_X,   (-1, self.rX, self.cX, 1))
+        # self.val_X   = tf.reshape(self.val_X,   (-1, self.rX, self.cX, 1))
         self.test_X  = tf.reshape(self.test_X,  (-1, self.rX, self.cX, 1))
 
         if self.kind =='segmentation':    # image reshaping
             self.train_y = tf.reshape(self.train_y, (-1, self.rX, self.cX, 1))
-            self.val_y   = tf.reshape(self.val_y,   (-1, self.rX, self.cX, 1))
+            # self.val_y   = tf.reshape(self.val_y,   (-1, self.rX, self.cX, 1))
             self.test_y  = tf.reshape(self.test_y,  (-1, self.rX, self.cX, 1))
         else: # labeling --> need to onehot encoding
             self.train_y = self.onehot_encoder(self.train_y)
-            self.val_y   = self.onehot_encoder(self.val_y)
+            # self.val_y   = self.onehot_encoder(self.val_y)
             self.test_y  = self.onehot_encoder(self.test_y)            
 
-        train_valid = [(self.train_X, self.train_y), (self.val_X, self.val_y)]
-
+        # train_valid = [(self.train_X, self.train_y), (self.val_X, self.val_y)]
+        train_valid = [self.train_X, self.train_y]
         return train_valid
 
     def onehot_encoder(self, labels):        
