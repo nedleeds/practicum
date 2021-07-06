@@ -24,7 +24,8 @@ RUN apt-get update &&\
 RUN sudo apt-get install python3 python-dev python3-dev \
     build-essential libssl-dev libffi-dev -y\
     libxml2-dev libxslt1-dev zlib1g-dev -y\
-    python-pip
+    python-pip \
+    tmux
     
 RUN pip install --upgrade pip &&\
     pip install opencv-python \

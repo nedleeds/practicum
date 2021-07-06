@@ -1,5 +1,3 @@
-import cv2
-import random
 import numpy as np
 import tensorflow as tf
 
@@ -26,42 +24,39 @@ class train():
         self.X, self.y = [],[]
 
     def __call__(self, imgs): # imgs -> image, label split. 
-    
-        
-
         # model building
-        
-        seeds = [x for x in range(1,42)]
-        for s in seeds :  
+
+        seeds = [3]
+        for seed in seeds :  
             # 1. select model    
             # s = 1
-            train_valid = self.data_split(imgs, s)
+            train_valid = self.data_split(imgs, seed)
             selected_model = model_select(select=self.select)(self.train_X, self.model_parameter[self.select], 1)
             selected_model.summary()
 
             # 2. compile model
-            compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=400, batch=8, learn_r=0.001)
+            compile_train(selected_model, self.select, train_valid)(opt='adam', epoch=100, batch=8, learn_r=0.001)
             
             # 3. model prediction    
-            if self.kind=='segmentation': model_out = self.savePredictedImg(selected_model)
-            else : model_out = self.savePredictedClass(selected_model)
+            if self.kind=='segmentation': model_out = self.saveTestImg(selected_model)
+            else : model_out = self.testScore(selected_model)
 
-        
+            # this is for "Binary class"
+            train_dr = np.sum(self.train_y,0)[0]
+            train_nc = np.sum(self.train_y,0)[1]
+            test_dr = np.sum(self.test_y,0)[0]
+            test_nc = np.sum(self.test_y,0)[1]
+
+            '''
             with open('seed_acc.txt', 'a') as f:
-                f.write(f"seed : {s}, acc:{model_out}\n")
-
-            if model_out > 87.0:
-                print(f"seed : {s}, acc:{model_out}")
-                # return
-        
-            
-
-        # # 가중치 로드
-        # model.load_weights(checkpoint_path)
-
-        # # 모델 재평가
-        # loss,acc = model.evaluate(test_images,  test_labels, verbose=2)
-        # print("복원된 모델의 정확도: {:5.2f}%".format(100*acc))
+                f.write(f"seed-{seed}\n")
+                f.write(f"\tacc:{model_out[0]}, precision:{model_out[1]}, recall:{model_out[2]}, ")
+                f.write(f"TP/TN/FP/FN:{model_out[-1][0]}/{model_out[-1][1]}/{model_out[-1][2]}/{model_out[-1][3]} \n")
+                f.write(f"\tTrain\tset - Normal/DR : {int(train_nc)}/{int(train_dr)}\n")
+                f.write(f"\tTest\tset - Normal/DR : {int(test_nc)}/{int(test_dr)}\n\n")
+            '''
+            if model_out[0] > 87.0:
+                print(f"seed : {seed}, acc:{model_out}")
 
         return model_out
 
@@ -111,7 +106,7 @@ class train():
         oh_labels = tf.one_hot(labels2, len(set(labels)))
         return oh_labels
 
-    def savePredictedImg(self,selected_m):
+    def saveTestImg(self,selected_m):
         for i in range(len(self.test_X)):
             model_out = []
             predicted = selected_m.predict((np.expand_dims(self.test_X[i],0)))
@@ -125,19 +120,37 @@ class train():
             plt.savefig('/root/Share/data/result/predict/predict_'+str(i)+'.png')
             return model_out
 
-    def savePredictedClass(self,selected_m):
+    def testScore(self,selected_m):
         predicted = selected_m.predict(self.test_X)
-        correct = 0
-        wrong = 0
+        correct   = 0
+        wrong     = 0
+        confuse   = []
+
         for idx, val in enumerate(predicted):
             if np.argmax(val)==1: pre="NORMAL"
             else: pre="DR"
-            if np.argmax(self.test_y.numpy()[idx])==1: tst="NORMAL"
-            else: tst="DR"
-            print(f"pre/test:{pre}/{tst}")
-            if pre==tst : correct+=1
+            if np.argmax(self.test_y.numpy()[idx])==1: gt="NORMAL"
+            else: gt="DR"
+            print(f"pre/test:{pre}/{gt}")
+            if pre==gt : correct+=1
             else : wrong +=1
-        print(f"wrong / correct : {wrong} / {correct}")
-        print(f"correct percentage : {round(correct/(wrong+correct),2)*100}%")
-        acc = round(correct/(wrong+correct),2)*100
-        return acc
+            
+            if   gt=="NORMAL" and pre=="NORMAL" : confuse.append("TP")
+            elif gt=="NORMAL" and pre=="DR"     : confuse.append("FN")
+            elif gt=="DR"     and pre=="NORMAL" : confuse.append("FP")
+            elif gt=="DR"     and pre=="DR"     : confuse.append("TN")
+            else: return "wrong operation chech testScore again"
+        
+        tp = confuse.count("TP")
+        fn = confuse.count("FN")
+        fp = confuse.count("FP")
+        tn = confuse.count("TN")
+
+        acc   = round((tp+tn)/(tp+tn+fp+fn),3)
+        prcsn = round(tp/(tp+fp),3)
+        rcll  = round(tp/(tp+fn),3)
+        print(f"test : acc-{acc}, precision-{prcsn}, recall={rcll}, TP/TN/FP/FN-{tp}/{tn}/{fp}/{fn}")
+        # print(f"wrong / correct : {wrong} / {correct}")
+        # print(f"correct percentage : {round(correct/(wrong+correct),2)*100}%")
+        # acc = round(correct/(wrong+correct),3)*100
+        return [acc*100, prcsn, rcll, [tp,tn,fp,fn]]

@@ -8,7 +8,7 @@ from keras   import optimizers
 
 import tensorflow.keras.backend as K
 from tensorflow.keras.losses import Loss
-
+from tensorflow.keras.metrics import Precision, Recall, TruePositives, TrueNegatives, FalsePositives, FalseNegatives
 
 class model_select(object):
     def __init__(self, select='unet'):
@@ -39,11 +39,10 @@ class compile_train():
 
     def __call__(self, opt='Adam', lss='mse', epoch=100, batch=8, learn_r=0.001):
         self.optimizer   = opt  
-        self.metric      = [tf.keras.metrics.Precision(),tf.keras.metrics.Recall()]
         self.loss        = self.myloss(self.train_X, self.train_y)
 
-        if self.metric :    
-            self.model_.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metric)
+        if self.metrics() : 
+            self.model_.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics())
         else:
             adam = optimizers.Adam(lr=learn_r)
             self.model_.compile(loss=self.loss, optimizer=adam)
@@ -97,3 +96,7 @@ class compile_train():
         loss4 = tf.keras.losses.CategoricalCrossentropy() # for disease classification
         total_loss = loss4
         return total_loss
+
+    def metrics(self):
+        m = [TruePositives(), TrueNegatives(), Precision(), Recall()]
+        return m
